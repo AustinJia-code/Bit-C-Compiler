@@ -7,7 +7,7 @@
 
 #include <string>
 #include <vector>
-#include <token.hpp>
+#include "token.hpp"
 
 /**
  * Converts input into tokens

@@ -3,6 +3,8 @@
  * @brief Defines tokens.
  */
 
+#pragma once
+
 #include <cstdlib>
 #include <array>
 #include <string_view>
@@ -12,18 +14,48 @@
  */
 enum class TokenType
 {
-    RETURN,
+    // Special
+    END_OF_FILE,
+    UNKNOWN,
+
+    // Literals
     INT_LITERAL,
-    ADD_OP,
-    SUB_OP,
-    DIV_OP,
-    DEREF_OP,
-    SEMICOLON,
-    L_PAREN,
-    R_PAREN,
+
+    // Identifiers
     IDENTIFIER,
-    END_OF_FILE
+
+    // Keywords
+    INT_TYPE,
+    RETURN,
+    IF,
+    WHILE,
+
+    // Operators
+    ADD_OP,    // +
+    SUB_OP,    // -
+    MULT_OP,   // *
+    DIV_OP,    // /
+
+    // Set/Comparison
+    EQ_OP,     // =
+    EQ_CMP,    // ==
+    NE_CMP,    // !=
+    LT_CMP,    // <
+    GT_CMP,    // >
+
+    // Logical Operators
+    AND_CMP,   // &&
+    OR_CMP,    // ||
+    NOT_OP,    // !
+
+    // Punctuation
+    SEMICOLON, // ;
+    L_PAREN,   // (
+    R_PAREN,   // )
+    L_BRACE,   // {
+    R_BRACE    // }
 };
+
 
 /**
  * Location for debugger

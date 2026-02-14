@@ -14,7 +14,7 @@ Supported Ops:
 * return
 * function definitions
 * local variables
-    * lowercase ascii and underscores
+    * alphanumeric and underscores
     * Max 32 chars
 
 ## Build & Run
@@ -33,3 +33,5 @@ make
 ## Future Work
 * Assembler
 * Linker
+
+* Memory (deref, address)
