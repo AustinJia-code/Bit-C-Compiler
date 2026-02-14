@@ -1,0 +1,15 @@
+{
+    "customFileOrder.rules": {
+        "/home/osten/Projects/Compiler": {
+            "order": [
+                "src",
+                "examples",
+                "tests",
+                ".gitignore",
+                "CMakeLists.txt",
+                "README.md"
+            ],
+            "type": "manual"
+        }
+    }
+}

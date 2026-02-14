@@ -14,21 +14,21 @@ Supported Ops:
 * return
 * function definitions
 * local variables
+    * lowercase ascii and underscores
+    * Max 32 chars
 
 ## Build & Run
+1. Replace path in ```src/common/paths.hpp```
+2. Build:
 ```
 cd build
 cmake ..
 make
+```
+3. Run:
+```
 ./compiler <PATH_TO_FILE>
 ```
-
-## Tests
-Source files compiled with:
-1. ```gcc -S <test>.c -o <test>.s```
-2. ```gcc <test>.s -o <test>```
-
-View return value with ```echo $?```
 
 ## Future Work
 * Assembler

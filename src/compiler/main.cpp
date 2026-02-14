@@ -1,6 +1,6 @@
 /**
  * @file /compiler/main.cpp
- * @brief Compiler runner
+ * @brief Compiler entry point.
  */
 
 #include <cstdlib>
