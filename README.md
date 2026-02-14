@@ -33,5 +33,6 @@ make
 ## Future Work
 * Assembler
 * Linker
-
-* Memory (deref, address)
+* Features
+    * Memory (deref, address)
+    * Structs, unions

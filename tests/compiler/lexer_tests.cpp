@@ -18,7 +18,7 @@ TestResult fts_1 ()
 
     std::string out = lexer.file_to_string ("tests/compiler/data/sentence.txt");
     
-    return TestResult {.name = "file_to_string",
+    return TestResult {.name = "fts basic functionality",
                        .pass = (out == "This is a \nnew line.")};
 }
 
@@ -30,7 +30,7 @@ TestResult fts_2 ()
     Lexer lexer {};
     std::string out = lexer.file_to_string ("bad/path");
 
-    return TestResult {.name = "file_to_string with bad path",
+    return TestResult {.name = "fts bad path",
                        .pass = out.empty ()};
 }
 
@@ -186,9 +186,9 @@ TestResult stt_location_tracking ()
     auto tokens = lexer.string_to_tokens (input);
 
     bool pass = tokens.size () == 4
-             && tokens[0].start.line == 1 && tokens[0].start.col == 1   // int
-             && tokens[1].start.line == 1 && tokens[1].start.col == 5   // x
-             && tokens[2].start.line == 2 && tokens[2].start.col == 1   // return
+             && tokens[0].start.line == 1 && tokens[0].start.col == 1 // int
+             && tokens[1].start.line == 1 && tokens[1].start.col == 5 // x
+             && tokens[2].start.line == 2 && tokens[2].start.col == 1 // return
              && tokens[3].type == TokenType::END_OF_FILE;
 
     return TestResult {.name = "stt location tracking", .pass = pass};
@@ -235,7 +235,7 @@ TestResult stt_full_statement ()
 
              && tokens[4].type == TokenType::SEMICOLON  
              && tokens[4].lexeme == ";"
-             
+
              && tokens[5].type == TokenType::END_OF_FILE;
 
     return TestResult {.name = "stt full statement", .pass = pass};
@@ -266,4 +266,6 @@ int main ()
 
     std::cout << "\n======= RESULTS =======" << std::endl;
     tb.print_results ();
+    std::cout << "\n=======================" << std::endl;
+
 }

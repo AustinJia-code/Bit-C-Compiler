@@ -25,7 +25,7 @@ std::ostream& operator << (std::ostream& os, const TestResult& obj)
 {
     std::string status_str = obj.pass ? "\033[32mPASS" :
                                         "\033[31mFAIL";
-    os << status_str << " - " << obj.name;
+    os << status_str << " --- " << obj.name << "\033[0m";
     
     return os;
 }
@@ -63,7 +63,11 @@ public:
      */
     void print_results ()
     {
-        for (auto result : results)
-            std::cout << result << std::endl;
+        for (int i = 0; i < results.size () ; ++i)
+        {
+            std::cout << results[i];
+            if (i < results.size () - 1)
+                 std::cout << std::endl;
+        }
     }
 };

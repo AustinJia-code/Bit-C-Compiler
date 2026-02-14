@@ -65,8 +65,8 @@ std::vector<Token> Lexer::string_to_tokens (const std::string& input) const
                 col++;
             }
             tokens.push_back ({TokenType::INT_LITERAL,
-                               {line, start_col},
-                               std::string_view {input.data () + start,
+                              {line, start_col},
+                              std::string_view {input.data () + start,
                                                  i - start}});
             continue;
         }
@@ -76,7 +76,8 @@ std::vector<Token> Lexer::string_to_tokens (const std::string& input) const
         {
             size_t start = i;
             size_t start_col = col;
-            while (i < input.size () && (std::isalnum (input[i]) || input[i] == '_'))
+            while (i < input.size ()
+               && (std::isalnum (input[i]) || input[i] == '_'))
             {
                 i++;
                 col++;
@@ -107,8 +108,8 @@ std::vector<Token> Lexer::string_to_tokens (const std::string& input) const
             if (token_type != TokenType::UNKNOWN)
             {
                 tokens.push_back ({token_type,
-                                   {line, col},
-                                   std::string_view {input.data () + i, 2}});
+                                  {line, col},
+                                  std::string_view {input.data () + i, 2}});
                 i += 2;
                 col += 2;
                 continue;
@@ -136,14 +137,14 @@ std::vector<Token> Lexer::string_to_tokens (const std::string& input) const
         }
 
         tokens.push_back ({type,
-                           {line, col},
-                           std::string_view {input.data () + i, 1}});
+                          {line, col},
+                          std::string_view {input.data () + i, 1}});
         ++i;
         ++col;
     }
 
     tokens.push_back ({TokenType::END_OF_FILE,
-                       {line, col},
-                       {}});
+                      {line, col},
+                      {}});
     return tokens;
 }
