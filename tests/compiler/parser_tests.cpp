@@ -36,7 +36,7 @@ bool stmt_is (const Stmt& s)
     return std::holds_alternative<T> (s.node);
 }
 
-/********** STATEMENT TESTS **********/
+/********** OPERATOR TESTS **********/
 /**
  * Parse a single integer literal
  */
@@ -68,7 +68,7 @@ TestResult parse_int_literal ()
 }
 
 /**
- * Binary arithmetic with correct precedence: 1 + 2 * 3 === 1 + (2*3)
+ * Binary arithmetic with correct precedence: 1 + 2 * 3 === 1 + (2 * 3)
  */
 TestResult parse_precedence ()
 {
@@ -290,8 +290,7 @@ TestResult parse_parens ()
     return TestResult {.name = "parse parenthesized expr", .pass = pass};
 }
 
-// ── Statement tests ───────────────────────────────────────────────
-
+/********* STATEMENT TESTS **********/
 /**
  * Variable declaration without init: int x;
  */
@@ -485,8 +484,7 @@ TestResult parse_while_stmt ()
     return TestResult {.name = "parse while statement", .pass = pass};
 }
 
-// ── Error tests ───────────────────────────────────────────────────
-
+/********** ERROR TESTS **********/
 /**
  * Missing semicolon after return
  */
@@ -588,8 +586,7 @@ TestResult parse_error_unclosed_paren ()
     return TestResult {.name = "error: unclosed paren", .pass = pass};
 }
 
-// ── Integration test ──────────────────────────────────────────────
-
+/********** INTEGRATION TESTS **********/
 /**
  * Full program with multiple statements
  */
