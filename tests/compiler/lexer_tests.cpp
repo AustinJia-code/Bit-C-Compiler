@@ -255,10 +255,6 @@ int main ()
     tb.add_test (gt_unknown);
     tb.add_test (gt_full_statement);
 
-    std::cout << "===== TEST OUTPUT =====" << std::endl;
     tb.run_tests ();
-
-    std::cout << "\n======= RESULTS =======" << std::endl;
     tb.print_results ();
-    std::cout << "\n=======================" << std::endl;
 }

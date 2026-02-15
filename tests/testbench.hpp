@@ -54,6 +54,7 @@ class Testbench
 {
 private:
     std::vector <TestFamily> families {};
+    bool dependency_cycle = true;
 
     /**
      * Find family index by name, or -1
@@ -113,6 +114,82 @@ private:
         family.evaluated = true;
     }
 
+    /**
+     * Validate dependency graph before running tests.
+     * Warns about missing dependencies and circular dependencies.
+     * Returns true if valid dependency chain
+     */
+    bool validate_dependencies ()
+    {
+        std::unordered_set <std::string> known;
+        for (const auto& family : families)
+            if (!family.name.empty ())
+                known.insert (family.name);
+
+        // Check for missing dependencies
+        for (const auto& family : families)
+            for (const auto& dep : family.depends_on)
+                if (!known.count (dep))
+                    std::cerr << "\033[33mWARN --- family \""
+                              << family.name
+                              << "\" depends on unknown family \""
+                              << dep << "\"\033[0m" << std::endl;
+
+        // Check for circular dependencies via DFS
+        // Build adjacency: family -> its dependencies
+        std::unordered_map <std::string, std::vector <std::string>> adj;
+        for (const auto& family : families)
+            if (!family.name.empty ())
+                adj[family.name] = family.depends_on;
+
+        // 0 = unvisited, 1 = in-stack, 2 = done
+        std::unordered_map <std::string, int> state;
+        std::vector <std::string> path;
+
+        this->dependency_cycle = false;
+
+        std::function <void (const std::string&)> check_cycle =
+            [&] (const std::string& node)
+        {
+            state[node] = 1;
+            path.push_back (node);
+
+            for (const auto& dep : adj[node])
+            {
+                if (!known.count (dep)) continue;
+                if (state[dep] == 1)
+                {
+                    // Found cycle — build the cycle string
+                    std::string cycle;
+                    auto it = std::find (path.begin (), path.end (), dep);
+                    for (; it != path.end (); ++it)
+                    {
+                        if (!cycle.empty ()) cycle += " -> ";
+                        cycle += "\"" + *it + "\"";
+                    }
+                    cycle += " -> \"" + dep + "\"";
+                    std::cerr << "\033[31mERROR --- circular dependency: "
+                              << cycle << "\033[0m" << std::endl;
+
+                    dependency_cycle = true;
+                }
+                else if (state[dep] == 0)
+                {
+                    check_cycle (dep);
+                }
+            }
+
+            path.pop_back ();
+            state[node] = 2;
+        };
+
+        for (const auto& name : known)
+            if (state[name] == 0)
+                check_cycle (name);
+
+        return !dependency_cycle;
+    }
+
 public:
     /**
      * Add a test to the default (unnamed) family
@@ -143,87 +220,20 @@ public:
     }
 
     /**
-     * Validate dependency graph before running tests.
-     * Warns about missing dependencies and circular dependencies.
-     */
-    void validate_dependencies () const
-    {
-        std::unordered_set <std::string> known;
-        for (const auto& family : families)
-            if (!family.name.empty ())
-                known.insert (family.name);
-
-        // Check for missing dependencies
-        for (const auto& family : families)
-            for (const auto& dep : family.depends_on)
-                if (!known.count (dep))
-                    std::cerr << "\033[33mWARN --- family \""
-                              << family.name
-                              << "\" depends on unknown family \""
-                              << dep << "\"\033[0m" << std::endl;
-
-        // Check for circular dependencies via DFS
-        // Build adjacency: family -> its dependencies
-        std::unordered_map <std::string, std::vector <std::string>> adj;
-        for (const auto& family : families)
-            if (!family.name.empty ())
-                adj[family.name] = family.depends_on;
-
-        // 0 = unvisited, 1 = in-stack, 2 = done
-        std::unordered_map <std::string, int> state;
-        std::vector <std::string> path;
-
-        std::function <bool (const std::string&)> has_cycle =
-            [&] (const std::string& node) -> bool
-        {
-            state[node] = 1;
-            path.push_back (node);
-
-            for (const auto& dep : adj[node])
-            {
-                if (!known.count (dep)) continue;
-                if (state[dep] == 1)
-                {
-                    // Found cycle — build the cycle string
-                    std::string cycle;
-                    auto it = std::find (path.begin (), path.end (), dep);
-                    for (; it != path.end (); ++it)
-                    {
-                        if (!cycle.empty ()) cycle += " -> ";
-                        cycle += "\"" + *it + "\"";
-                    }
-                    cycle += " -> \"" + dep + "\"";
-                    std::cerr << "\033[33mWARN --- circular dependency: "
-                              << cycle << "\033[0m" << std::endl;
-                    path.pop_back ();
-                    return true;
-                }
-                if (state[dep] == 0 && has_cycle (dep))
-                {
-                    path.pop_back ();
-                    return true;
-                }
-            }
-
-            path.pop_back ();
-            state[node] = 2;
-            return false;
-        };
-
-        for (const auto& name : known)
-            if (state[name] == 0)
-                has_cycle (name);
-    }
-
-    /**
      * Run all families in order, checking dependencies
+     * Return true if run success
      */
-    void run_tests ()
+    bool run_tests ()
     {
-        validate_dependencies ();
+        std::cout << "===== TEST OUTPUT =====" << std::endl;
+
+        if (!validate_dependencies ())
+            return false;
 
         for (auto& family : families)
             test_family (family);
+        
+        return true;
     }
 
     /**
@@ -231,6 +241,14 @@ public:
      */
     void print_results ()
     {
+        std::cout << "\n======= RESULTS =======" << std::endl;
+        if (this->dependency_cycle)
+        {    
+            std::cerr << "\033[31mERROR --- Dependencies not validated"
+                      << "\033[0m" << std::endl;
+            return;
+        }
+
         for (size_t f = 0; f < families.size (); ++f)
         {
             const auto& family = families[f];
@@ -254,5 +272,7 @@ public:
             if (f < families.size () - 1)
                 std::cout << std::endl;
         }
+        
+        std::cout << "\n=======================" << std::endl;
     }
 };
