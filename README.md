@@ -1,5 +1,5 @@
-# Compiler
-Tiny C compiler that:
+# Bit-C Compiler
+An itsy Bit-C C compiler that:
 * lexes
 * parses
 * builds AST
@@ -35,6 +35,8 @@ make
 * Linker
 * Features
     * Memory (deref, address)
+    * Operators (|, &, <<, >>)
     * Structs, unions
     * Function params
-    * Comments (mult + single line)
+    * Function return types
+    * Comments (mult/single line)
