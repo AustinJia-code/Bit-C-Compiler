@@ -42,6 +42,8 @@ struct TestFamily
     std::vector <std::function<TestResult ()>> tests {};
     std::vector <std::string> depends_on {};
     std::vector <TestResult> results {};
+
+    bool evaluated = false;
     bool all_passed = true;
 };
 
@@ -62,6 +64,53 @@ private:
             if (families[i].name == name)
                 return i;
         return -1;
+    }
+
+    /**
+     * Run tests for a single family
+     */
+    void test_family (TestFamily& family)
+    {
+        family.results.clear ();
+        family.all_passed = true;
+        std::vector<TestFamily> failed_deps {};
+
+        // Check dependencies
+        for (const auto& dep : family.depends_on)
+        {
+            TestFamily dep_family = families[find_family (dep)];
+            if (!dep_family.evaluated)
+                test_family (dep_family);
+
+            if (!dep_family.all_passed)
+                failed_deps.push_back (dep_family);
+        }
+
+        if (!failed_deps.empty ())
+        {
+            std::cerr << "\033[33mWARN --- family \""
+                        << family.name
+                        << "\" depends on failed: ";
+            for (size_t i = 0; i < failed_deps.size (); ++i)
+            {
+                if (i > 0) std::cerr << ", ";
+                std::cerr << "\"" << failed_deps[i].name << "\"";
+            }
+            std::cerr << "\033[0m" << std::endl;
+        }
+
+        // Run tests
+        for (auto& test : family.tests)
+        {
+            auto result = test ();
+
+            if (!result.pass)
+                family.all_passed = false;
+
+            family.results.push_back (result);
+        }
+
+        family.evaluated = true;
     }
 
 public:
@@ -172,44 +221,9 @@ public:
     void run_tests ()
     {
         validate_dependencies ();
-        std::unordered_set <std::string> failed_families {};
 
         for (auto& family : families)
-        {
-            family.results.clear ();
-            family.all_passed = true;
-
-            // Check dependencies
-            std::vector <std::string> failed_deps {};
-            for (const auto& dep : family.depends_on)
-                if (failed_families.count (dep))
-                    failed_deps.push_back (dep);
-
-            if (!failed_deps.empty ())
-            {
-                std::cerr << "\033[33mWARN --- family \""
-                          << family.name
-                          << "\" depends on failed: ";
-                for (size_t i = 0; i < failed_deps.size (); ++i)
-                {
-                    if (i > 0) std::cerr << ", ";
-                    std::cerr << "\"" << failed_deps[i] << "\"";
-                }
-                std::cerr << "\033[0m" << std::endl;
-            }
-
-            // Run tests
-            for (auto& test : family.tests)
-            {
-                auto result = test ();
-                if (!result.pass)
-                    family.all_passed = false;
-                family.results.push_back (result);
-            }
-
-            if (!family.all_passed && !family.name.empty ())
-                failed_families.insert (family.name);
-        }
+            test_family (family);
     }
 
     /**
