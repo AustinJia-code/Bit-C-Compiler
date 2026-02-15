@@ -4,32 +4,16 @@
  */
 
 #include <lexer.hpp>
-#include <fstream>
-#include <iostream>
-#include <iterator>
 #include <string>
 #include <algorithm>
 #include <cctype>
 #include <set>
-#include "paths.hpp"
+#include "file_utils.hpp"
 #include "token.hpp"
 
-std::string Lexer::file_to_string (const std::string& file_path) const
+void Lexer::string_to_tokens ()
 {
-    std::ifstream file (get_full_path (file_path));
-    if (!file.is_open ())
-    {
-        std::cerr << "Error: could not open " << file_path << std::endl;
-        return std::string {};
-    }
-        
-    return {std::istreambuf_iterator<char> {file},
-            std::istreambuf_iterator<char> {}};
-}
-
-std::vector<Token> Lexer::string_to_tokens (const std::string& input) const
-{
-    std::vector<Token> tokens;
+    this->tokens = {};
     size_t i = 0;
     size_t line = 1;
     size_t col = 1;
@@ -64,10 +48,10 @@ std::vector<Token> Lexer::string_to_tokens (const std::string& input) const
                 i++;
                 col++;
             }
-            tokens.push_back ({TokenType::INT_LITERAL,
-                              {line, start_col},
-                              std::string_view {input.data () + start,
-                                                 i - start}});
+            this->tokens.push_back ({TokenType::INT_LITERAL,
+                                    {line, start_col},
+                                    std::string_view {input.data () + start,
+                                                       i - start}});
             continue;
         }
 
@@ -90,7 +74,7 @@ std::vector<Token> Lexer::string_to_tokens (const std::string& input) const
             else if (lexeme == "if")     type = TokenType::IF;
             else if (lexeme == "while")  type = TokenType::WHILE;
 
-            tokens.push_back ({type, {line, start_col}, lexeme});
+            this->tokens.push_back ({type, {line, start_col}, lexeme});
             continue;
         }
 
@@ -107,9 +91,10 @@ std::vector<Token> Lexer::string_to_tokens (const std::string& input) const
 
             if (token_type != TokenType::UNKNOWN)
             {
-                tokens.push_back ({token_type,
-                                  {line, col},
-                                  std::string_view {input.data () + i, 2}});
+                this->tokens.push_back ({token_type,
+                                        {line, col},
+                                        std::string_view {input.data () + i,
+                                                          2}});
                 i += 2;
                 col += 2;
                 continue;
@@ -136,15 +121,37 @@ std::vector<Token> Lexer::string_to_tokens (const std::string& input) const
             default: break;
         }
 
-        tokens.push_back ({type,
-                          {line, col},
-                          std::string_view {input.data () + i, 1}});
+        this->tokens.push_back ({type,
+                                {line, col},
+                                std::string_view {input.data () + i, 1}});
         ++i;
         ++col;
     }
 
-    tokens.push_back ({TokenType::END_OF_FILE,
-                      {line, col},
-                      {}});
+    this->tokens.push_back ({TokenType::END_OF_FILE,
+                            {line, col},
+                            {}});
+}
+
+Lexer::Lexer (const std::string& in_str, bool file_flag)
+    : tokens {}
+{
+    if (file_flag)
+    {
+        this->file_path = in_str;
+        this->input = file_to_string (in_str);
+    }
+    else
+    {
+        this->file_path = {};
+        this->input = in_str;
+    }
+}
+
+std::vector<Token> Lexer::get_tokens ()
+{
+    if (this->tokens.empty ())
+        this->string_to_tokens ();
+    
     return tokens;
 }

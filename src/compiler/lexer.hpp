@@ -14,16 +14,25 @@
  */
 class Lexer
 {
-public:
-    /**
-     * Convert input file to string
-     * Returns empty string on failure
-     */
-    std::string file_to_string (const std::string& file_path) const;
+private:
+    std::string file_path;
+    std::string input;
+    std::vector<Token> tokens;
 
     /**
      * Converts input string into tokens
-     * Returns empty vector on failure
+     * Sets empty vector on failure
      */
-    std::vector<Token> string_to_tokens (const std::string& input) const;
+    void string_to_tokens ();
+    
+public:
+    /**
+     * Constructor, unset file_flag if input is a raw string
+     */
+    Lexer (const std::string& in_str, bool file_flag = 1);
+
+    /**
+     * Parse input and return tokens
+     */
+    std::vector<Token> get_tokens ();
 };

@@ -8,6 +8,9 @@
 #include <array>
 #include <optional>
 #include <string.h>
+#include <cstring>
+#include "lexer.hpp"
+#include "parser.hpp"
 
 static constexpr size_t MAX_PATH_LEN = 64;
 
@@ -56,6 +59,25 @@ int main (int argc, char* argv[])
     std::optional<Args> args = parse_args (argc, argv);
     if (!args)
         return EXIT_FAILURE;
+
+    // Get tokens
+    Lexer lexer (std::string {args->in_path.data ()});
+    auto tokens = lexer.get_tokens ();
+
+    // Parse tokens
+    try
+    {
+        Parser parser {tokens};
+        Program program = parser.parse ();
+        std::cout << "Parsing successful: "
+                  << program.functions.size () << " function(s)" << std::endl;
+    }
+    catch (const ParseError& e)
+    {
+        std::cerr << "Parse error [" << e.loc.line << ":"
+                  << e.loc.col << "]: " << e.what () << std::endl;
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }

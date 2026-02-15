@@ -23,7 +23,7 @@ struct TestResult
  */
 std::ostream& operator << (std::ostream& os, const TestResult& obj)
 {
-    std::string status_str = obj.pass ? "\033[32mPASS" :
+    const char* status_str = obj.pass ? "\033[32mPASS" :
                                         "\033[31mFAIL";
     os << status_str << " --- " << obj.name << "\033[0m";
     

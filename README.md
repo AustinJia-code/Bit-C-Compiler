@@ -12,7 +12,7 @@ Supported Ops:
 * if
 * while
 * return
-* function definitions
+* int function definitions (no params)
 * local variables
     * alphanumeric and underscores
     * Max 32 chars
@@ -36,3 +36,5 @@ make
 * Features
     * Memory (deref, address)
     * Structs, unions
+    * Function params
+    * Comments (mult + single line)

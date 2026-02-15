@@ -12,6 +12,7 @@ target_include_directories (test_core INTERFACE
 
 add_library (compiler_core
     src/compiler/lexer.cpp
+    src/compiler/parser.cpp
 )
 target_include_directories (compiler_core PUBLIC
     src/common
@@ -25,3 +26,10 @@ target_link_libraries (compiler PRIVATE compiler_core)
 # Tests
 add_executable (lexer_tests tests/compiler/lexer_tests.cpp)
 target_link_libraries (lexer_tests PRIVATE compiler_core test_core)
+
+add_executable (parser_tests tests/compiler/parser_tests.cpp)
+target_link_libraries (parser_tests PRIVATE compiler_core test_core)
+
+add_executable (file_utils_tests tests/common/file_utils_tests.cpp)
+target_include_directories (file_utils_tests PRIVATE src/common)
+target_link_libraries (file_utils_tests PRIVATE test_core)

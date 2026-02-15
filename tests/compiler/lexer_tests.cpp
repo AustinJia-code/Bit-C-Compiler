@@ -10,68 +10,40 @@
 #include <string>
 
 /**
- * file_to_string: basic functionality
+ * get_tokens: empty input produces only EOF
  */
-TestResult fts_1 ()
+TestResult gt_empty ()
 {
-    Lexer lexer {};
-
-    std::string out = lexer.file_to_string ("tests/compiler/data/sentence.txt");
-    
-    return TestResult {.name = "fts basic functionality",
-                       .pass = (out == "This is a \nnew line.")};
-}
-
-/**
- * file_to_string: proper error handling with bad path
- */
-TestResult fts_2 ()
-{
-    Lexer lexer {};
-    std::string out = lexer.file_to_string ("bad/path");
-
-    return TestResult {.name = "fts bad path",
-                       .pass = out.empty ()};
-}
-
-/**
- * string_to_tokens: empty input produces only EOF
- */
-TestResult stt_empty ()
-{
-    Lexer lexer {};
-    std::string input = "";
-    auto tokens = lexer.string_to_tokens (input);
+    Lexer lexer {"", false};
+    auto tokens = lexer.get_tokens ();
 
     bool pass = tokens.size () == 1
              && tokens[0].type == TokenType::END_OF_FILE;
 
-    return TestResult {.name = "stt empty input", .pass = pass};
+    return TestResult {.name = "gt empty input", .pass = pass};
 }
 
 /**
- * string_to_tokens: whitespace-only input produces only EOF
+ * get_tokens: whitespace-only input produces only EOF
  */
-TestResult stt_whitespace ()
+TestResult gt_whitespace ()
 {
-    Lexer lexer {};
-    std::string input = "   \n\t  \n  ";
-    auto tokens = lexer.string_to_tokens (input);
+    Lexer lexer {"   \n\t  \n  ", false};
+    auto tokens = lexer.get_tokens ();
 
     bool pass = tokens.size () == 1
              && tokens[0].type == TokenType::END_OF_FILE;
 
-    return TestResult {.name = "stt whitespace only", .pass = pass};
+    return TestResult {.name = "gt whitespace only", .pass = pass};
 }
 
 /**
- * string_to_tokens: integer literal
+ * get_tokens: integer literal
  */
-TestResult stt_int_literal ()
+TestResult gt_int_literal ()
 {
-    Lexer lexer {};
-    std::string input = "42";
-    auto tokens = lexer.string_to_tokens (input);
+    Lexer lexer {"42", false};
+    auto tokens = lexer.get_tokens ();
 
     bool pass = tokens.size () == 2
              && tokens[0].type == TokenType::INT_LITERAL
@@ -80,17 +52,16 @@ TestResult stt_int_literal ()
              && tokens[0].start.col == 1
              && tokens[1].type == TokenType::END_OF_FILE;
 
-    return TestResult {.name = "stt int literal", .pass = pass};
+    return TestResult {.name = "gt int literal", .pass = pass};
 }
 
 /**
- * string_to_tokens: keywords
+ * get_tokens: keywords
  */
-TestResult stt_keywords ()
+TestResult gt_keywords ()
 {
-    Lexer lexer {};
-    std::string input = "int return if while";
-    auto tokens = lexer.string_to_tokens (input);
+    Lexer lexer {"int return if while", false};
+    auto tokens = lexer.get_tokens ();
 
     bool pass = tokens.size () == 5
              && tokens[0].type == TokenType::INT_TYPE
@@ -99,17 +70,16 @@ TestResult stt_keywords ()
              && tokens[3].type == TokenType::WHILE
              && tokens[4].type == TokenType::END_OF_FILE;
 
-    return TestResult {.name = "stt keywords", .pass = pass};
+    return TestResult {.name = "gt keywords", .pass = pass};
 }
 
 /**
- * string_to_tokens: identifiers (including keyword prefixes)
+ * get_tokens: identifiers (including keyword prefixes)
  */
-TestResult stt_identifiers ()
+TestResult gt_identifiers ()
 {
-    Lexer lexer {};
-    std::string input = "foo _bar integer returning";
-    auto tokens = lexer.string_to_tokens (input);
+    Lexer lexer {"foo _bar integer returning", false};
+    auto tokens = lexer.get_tokens ();
 
     bool pass = tokens.size () == 5
              && tokens[0].type == TokenType::IDENTIFIER
@@ -126,17 +96,16 @@ TestResult stt_identifiers ()
 
              && tokens[4].type == TokenType::END_OF_FILE;
 
-    return TestResult {.name = "stt identifiers", .pass = pass};
+    return TestResult {.name = "gt identifiers", .pass = pass};
 }
 
 /**
- * string_to_tokens: single-character operators and punctuation
+ * get_tokens: single-character operators and punctuation
  */
-TestResult stt_single_char_ops ()
+TestResult gt_single_char_ops ()
 {
-    Lexer lexer {};
-    std::string input = "+ - * / = < > ! ; ( ) { }";
-    auto tokens = lexer.string_to_tokens (input);
+    Lexer lexer {"+ - * / = < > ! ; ( ) { }", false};
+    auto tokens = lexer.get_tokens ();
 
     bool pass = tokens.size () == 14
              && tokens[0].type  == TokenType::ADD_OP
@@ -154,17 +123,16 @@ TestResult stt_single_char_ops ()
              && tokens[12].type == TokenType::R_BRACE
              && tokens[13].type == TokenType::END_OF_FILE;
 
-    return TestResult {.name = "stt single char operators", .pass = pass};
+    return TestResult {.name = "gt single char operators", .pass = pass};
 }
 
 /**
- * string_to_tokens: two-character operators
+ * get_tokens: two-character operators
  */
-TestResult stt_two_char_ops ()
+TestResult gt_two_char_ops ()
 {
-    Lexer lexer {};
-    std::string input = "== != && ||";
-    auto tokens = lexer.string_to_tokens (input);
+    Lexer lexer {"== != && ||", false};
+    auto tokens = lexer.get_tokens ();
 
     bool pass = tokens.size () == 5
              && tokens[0].type == TokenType::EQ_CMP  && tokens[0].lexeme == "=="
@@ -173,17 +141,17 @@ TestResult stt_two_char_ops ()
              && tokens[3].type == TokenType::OR_CMP  && tokens[3].lexeme == "||"
              && tokens[4].type == TokenType::END_OF_FILE;
 
-    return TestResult {.name = "stt two char operators", .pass = pass};
+    return TestResult {.name = "gt two char operators", .pass = pass};
 }
 
 /**
- * string_to_tokens: line and column tracking across newlines
+ * get_tokens: line and column tracking across newlines
  */
-TestResult stt_location_tracking ()
+TestResult gt_location_tracking ()
 {
-    Lexer lexer {};
+    Lexer lexer {"int x\nreturn", false};
     std::string input = "int x\nreturn";
-    auto tokens = lexer.string_to_tokens (input);
+    auto tokens = lexer.get_tokens ();
 
     bool pass = tokens.size () == 4
              && tokens[0].start.line == 1 && tokens[0].start.col == 1 // int
@@ -191,34 +159,33 @@ TestResult stt_location_tracking ()
              && tokens[2].start.line == 2 && tokens[2].start.col == 1 // return
              && tokens[3].type == TokenType::END_OF_FILE;
 
-    return TestResult {.name = "stt location tracking", .pass = pass};
+    return TestResult {.name = "gt location tracking", .pass = pass};
 }
 
 /**
- * string_to_tokens: unknown character produces UNKNOWN token
+ * get_tokens: unknown character produces UNKNOWN token
  */
-TestResult stt_unknown ()
+TestResult gt_unknown ()
 {
-    Lexer lexer {};
+    Lexer lexer {"@", false};
     std::string input = "@";
-    auto tokens = lexer.string_to_tokens (input);
+    auto tokens = lexer.get_tokens ();
 
     bool pass = tokens.size () == 2
              && tokens[0].type == TokenType::UNKNOWN
              && tokens[0].lexeme == "@"
              && tokens[1].type == TokenType::END_OF_FILE;
 
-    return TestResult {.name = "stt unknown token", .pass = pass};
+    return TestResult {.name = "gt unknown token", .pass = pass};
 }
 
 /**
- * string_to_tokens: full statement
+ * get_tokens: full statement
  */
-TestResult stt_full_statement ()
+TestResult gt_full_statement ()
 {
-    Lexer lexer {};
-    std::string input = "int x = 5;";
-    auto tokens = lexer.string_to_tokens (input);
+    Lexer lexer {"int x = 5;", false};
+    auto tokens = lexer.get_tokens ();
 
     bool pass = tokens.size () == 6
              && tokens[0].type == TokenType::INT_TYPE
@@ -238,7 +205,36 @@ TestResult stt_full_statement ()
 
              && tokens[5].type == TokenType::END_OF_FILE;
 
-    return TestResult {.name = "stt full statement", .pass = pass};
+    return TestResult {.name = "gt full statement", .pass = pass};
+}
+
+/**
+ * get_tokens: full statement from file
+ */
+TestResult gt_full_file ()
+{
+    Lexer lexer {"/examples/statement.txt"};
+    auto tokens = lexer.get_tokens ();
+
+    bool pass = tokens.size () == 6
+             && tokens[0].type == TokenType::INT_TYPE
+             && tokens[0].lexeme == "int"
+
+             && tokens[1].type == TokenType::IDENTIFIER
+             && tokens[1].lexeme == "x"
+
+             && tokens[2].type == TokenType::EQ_OP
+             && tokens[2].lexeme == "="
+
+             && tokens[3].type == TokenType::INT_LITERAL
+             && tokens[3].lexeme == "5"
+
+             && tokens[4].type == TokenType::SEMICOLON  
+             && tokens[4].lexeme == ";"
+
+             && tokens[5].type == TokenType::END_OF_FILE;
+
+    return TestResult {.name = "gt full statement", .pass = pass};
 }
 
 /**
@@ -248,18 +244,16 @@ int main ()
 {
     Testbench tb {};
 
-    tb.add_test (fts_1);
-    tb.add_test (fts_2);
-    tb.add_test (stt_empty);
-    tb.add_test (stt_whitespace);
-    tb.add_test (stt_int_literal);
-    tb.add_test (stt_keywords);
-    tb.add_test (stt_identifiers);
-    tb.add_test (stt_single_char_ops);
-    tb.add_test (stt_two_char_ops);
-    tb.add_test (stt_location_tracking);
-    tb.add_test (stt_unknown);
-    tb.add_test (stt_full_statement);
+    tb.add_test (gt_empty);
+    tb.add_test (gt_whitespace);
+    tb.add_test (gt_int_literal);
+    tb.add_test (gt_keywords);
+    tb.add_test (gt_identifiers);
+    tb.add_test (gt_single_char_ops);
+    tb.add_test (gt_two_char_ops);
+    tb.add_test (gt_location_tracking);
+    tb.add_test (gt_unknown);
+    tb.add_test (gt_full_statement);
 
     std::cout << "===== TEST OUTPUT =====" << std::endl;
     tb.run_tests ();
@@ -267,5 +261,4 @@ int main ()
     std::cout << "\n======= RESULTS =======" << std::endl;
     tb.print_results ();
     std::cout << "\n=======================" << std::endl;
-
 }
