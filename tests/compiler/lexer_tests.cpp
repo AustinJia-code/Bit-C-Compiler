@@ -1,6 +1,6 @@
 /**
  * @file lexer_tests.cpp
- * @brief Tests for the Lexer class
+ * @brief Isolated tests for the Lexer class
  */
 
 #include <vector>

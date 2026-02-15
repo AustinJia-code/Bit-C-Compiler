@@ -1,6 +1,6 @@
 /**
  * @file parser_tests.cpp
- * @brief Tests for the Parser class
+ * @brief Isolated tests for the Parser class
  */
 
 #include <vector>
@@ -36,7 +36,7 @@ bool stmt_is (const Stmt& s)
     return std::holds_alternative<T> (s.node);
 }
 
-/********** OPERATOR TESTS **********/
+/********** EXPRESSION TESTS **********/
 /**
  * Parse a single integer literal
  */
@@ -643,28 +643,36 @@ int main ()
 {
     Testbench tb {};
 
-    // Expression tests
-    tb.add_test (parse_int_literal);
-    tb.add_test (parse_precedence);
-    tb.add_test (parse_unary_negate);
-    tb.add_test (parse_comparison);
-    tb.add_test (parse_logical_ops);
-    tb.add_test (parse_parens);
+    tb.add_family ("Expressions",
+    {
+        parse_int_literal,
+        parse_precedence,
+        parse_unary_negate,
+        parse_comparison,
+        parse_logical_ops,
+        parse_parens,
+    });
 
-    // Statement tests
-    tb.add_test (parse_var_decl_no_init);
-    tb.add_test (parse_var_decl_with_init);
-    tb.add_test (parse_assignment);
-    tb.add_test (parse_if_stmt);
-    tb.add_test (parse_while_stmt);
+    tb.add_family ("Statements",
+    {
+        parse_var_decl_no_init,
+        parse_var_decl_with_init,
+        parse_assignment,
+        parse_if_stmt,
+        parse_while_stmt,
+    }, {"Expressions"});
 
-    // Error tests
-    tb.add_test (parse_error_missing_semicolon);
-    tb.add_test (parse_error_invalid_expr);
-    tb.add_test (parse_error_unclosed_paren);
+    tb.add_family ("Errors",
+    {
+        parse_error_missing_semicolon,
+        parse_error_invalid_expr,
+        parse_error_unclosed_paren,
+    });
 
-    // Integration
-    tb.add_test (parse_full_program);
+    tb.add_family ("Integration",
+    {
+        parse_full_program,
+    }, {"Expressions", "Statements"});
 
     std::cout << "===== TEST OUTPUT =====" << std::endl;
     tb.run_tests ();

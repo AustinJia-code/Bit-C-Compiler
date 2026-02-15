@@ -1,6 +1,11 @@
 /**
  * @file ast.hpp
  * @brief Abstract Syntax Tree node types.
+ * 
+ * program
+ * └── functions
+ *      └── block of statements [declaration | return | if | while | block]
+ *           └── expressions
  */
 
 #pragma once

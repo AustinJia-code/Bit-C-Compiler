@@ -13,6 +13,7 @@ target_include_directories (test_core INTERFACE
 add_library (compiler_core
     src/compiler/lexer.cpp
     src/compiler/parser.cpp
+    src/compiler/codegen.cpp
 )
 target_include_directories (compiler_core PUBLIC
     src/common
@@ -29,6 +30,12 @@ target_link_libraries (lexer_tests PRIVATE compiler_core test_core)
 
 add_executable (parser_tests tests/compiler/parser_tests.cpp)
 target_link_libraries (parser_tests PRIVATE compiler_core test_core)
+
+add_executable (codegen_tests tests/compiler/codegen_tests.cpp)
+target_link_libraries (codegen_tests PRIVATE compiler_core test_core)
+
+add_executable (compiler_tests tests/compiler/compiler_tests.cpp)
+target_link_libraries (compiler_tests PRIVATE compiler_core test_core)
 
 add_executable (file_utils_tests tests/common/file_utils_tests.cpp)
 target_include_directories (file_utils_tests PRIVATE src/common)
