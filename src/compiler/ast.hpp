@@ -57,9 +57,15 @@ struct BinaryOp
     std::unique_ptr<Expr> right;
 };
 
+struct FuncCall
+{
+    std::string name;
+    std::vector<std::unique_ptr<Expr>> args;
+};
+
 struct Expr
 {
-    std::variant<IntLiteral, Identifier, UnaryOp, BinaryOp> node;
+    std::variant<IntLiteral, Identifier, UnaryOp, BinaryOp, FuncCall> node;
 };
 
 /********** STATEMENT NODES **********/
@@ -109,9 +115,15 @@ struct Stmt
 };
 
 /********** Top-Level **********/
+struct Param
+{
+    std::string name;
+};
+
 struct Function
 {
     std::string name;
+    std::vector<Param> params;
     Block body;
 };
 

@@ -191,11 +191,32 @@ std::unique_ptr<Expr> Parser::primary ()
         return expr;
     }
 
-    // Identifier
+    // Identifier or function call
     if (match (TokenType::IDENTIFIER))
     {
+        std::string name {prev ().lexeme};
+
+        // Function call: identifier followed by '('
+        if (match (TokenType::L_PAREN))
+        {
+            std::vector<std::unique_ptr<Expr>> args;
+
+            if (!check (TokenType::R_PAREN))
+            {
+                args.push_back (expression ());
+                while (match (TokenType::COMMA))
+                    args.push_back (expression ());
+            }
+
+            expect (TokenType::R_PAREN, "expected ')' after arguments");
+
+            auto expr = std::make_unique<Expr> ();
+            expr->node = FuncCall {std::move (name), std::move (args)};
+            return expr;
+        }
+
         auto expr = std::make_unique<Expr> ();
-        expr->node = Identifier {std::string {prev ().lexeme}};
+        expr->node = Identifier {std::move (name)};
         return expr;
     }
 
@@ -331,11 +352,29 @@ Function Parser::function ()
                            name_tok.start);
 
     expect (TokenType::L_PAREN, "expected '(' after function name");
+
+    std::vector<Param> params;
+    if (!check (TokenType::R_PAREN))
+    {
+        expect (TokenType::INT_TYPE, "expected parameter type");
+        const Token& p_name = expect (TokenType::IDENTIFIER,
+                                       "expected parameter name");
+        params.push_back (Param {std::string {p_name.lexeme}});
+
+        while (match (TokenType::COMMA))
+        {
+            expect (TokenType::INT_TYPE, "expected parameter type");
+            const Token& pn = expect (TokenType::IDENTIFIER,
+                                       "expected parameter name");
+            params.push_back (Param {std::string {pn.lexeme}});
+        }
+    }
+
     expect (TokenType::R_PAREN, "expected ')' after parameters");
 
     auto body = block ();
 
-    return Function {std::move (name), std::move (body)};
+    return Function {std::move (name), std::move (params), std::move (body)};
 }
 
 Program Parser::parse ()

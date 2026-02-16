@@ -134,7 +134,8 @@ TestResult com_eq_false ()
 /********** If tests **********/
 TestResult com_if_true ()
 {
-    int code = run_source (
+    int code = run_source
+    (
         "int main () {"
         "    if (1 < 5) { return 42; }"
         "    return 13;"
@@ -145,7 +146,8 @@ TestResult com_if_true ()
 
 TestResult com_if_false ()
 {
-    int code = run_source (
+    int code = run_source
+    (
         "int main () {"
         "    if (5 < 1) { return 42; }"
         "    return 13;"
@@ -157,7 +159,8 @@ TestResult com_if_false ()
 /********** Variable tests **********/
 TestResult com_var_decl ()
 {
-    int code = run_source (
+    int code = run_source
+    (
         "int main () {"
         "    int x = 42;"
         "    return x;"
@@ -168,7 +171,8 @@ TestResult com_var_decl ()
 
 TestResult com_var_assign ()
 {
-    int code = run_source (
+    int code = run_source
+    (
         "int main () {"
         "    int x = 1;"
         "    x = 42;"
@@ -180,7 +184,8 @@ TestResult com_var_assign ()
 
 TestResult com_var_arith ()
 {
-    int code = run_source (
+    int code = run_source
+    (
         "int main () {"
         "    int a = 10;"
         "    int b = 32;"
@@ -193,7 +198,9 @@ TestResult com_var_arith ()
 /********** While tests **********/
 TestResult com_while ()
 {
-    int code = run_source (
+    int code = run_source
+
+    (
         "int main () {"
         "    int x = 0;"
         "    while (x < 10) { x = x + 1; }"
@@ -205,7 +212,8 @@ TestResult com_while ()
 
 TestResult com_while_sum ()
 {
-    int code = run_source (
+    int code = run_source
+    (
         "int main () {"
         "    int i = 0;"
         "    int sum = 0;"
@@ -217,6 +225,48 @@ TestResult com_while_sum ()
         "}"
     );
     return TestResult {.name = "while sum", .pass = code == 10};
+}
+
+/********** Function call tests **********/
+TestResult com_call_one_param ()
+{
+    int code = run_source
+    (
+        "int id (int x) { return x; }"
+        "int main () { return id (42); }"
+    );
+    return TestResult {.name = "call one param", .pass = code == 42};
+}
+
+TestResult com_call_two_params ()
+{
+    int code = run_source
+    (
+        "int add (int a, int b) { return a + b; }"
+        "int main () { return add (10, 32); }"
+    );
+    return TestResult {.name = "call two params", .pass = code == 42};
+}
+
+TestResult com_call_expr_args ()
+{
+    int code = run_source
+    (
+        "int add (int a, int b) { return a + b; }"
+        "int main () { return add (2 + 3, 7 * 5); }"
+    );
+    return TestResult {.name = "call expr args", .pass = code == 40};
+}
+
+TestResult com_nested_calls ()
+{
+    int code = run_source
+    (
+        "int double_it (int x) { return x + x; }"
+        "int inc (int x) { return x + 1; }"
+        "int main () { return double_it (inc (20)); }"
+    );
+    return TestResult {.name = "nested calls", .pass = code == 42};
 }
 
 /**
@@ -274,6 +324,14 @@ int main ()
         com_while,
         com_while_sum,
     }, {"variables"});
+
+    tb.add_family ("functions",
+    {
+        com_call_one_param,
+        com_call_two_params,
+        com_call_expr_args,
+        com_nested_calls,
+    }, {"return"});
 
     tb.run_tests ();
     tb.print_results ();

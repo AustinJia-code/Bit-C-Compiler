@@ -600,6 +600,115 @@ TestResult parse_error_unclosed_paren ()
     return TestResult {.name = "error: unclosed paren", .pass = pass};
 }
 
+/********** FUNCTION PARAMETER & CALL TESTS **********/
+TestResult parse_func_one_param ()
+{
+    // int f (int a) { return a; }
+    std::string sa = "a";
+    std::vector<Token> tokens =
+    {
+        tok (TokenType::INT_TYPE, "int"),
+        tok (TokenType::IDENTIFIER, "f"),
+        tok (TokenType::L_PAREN),
+        tok (TokenType::INT_TYPE, "int"),
+        tok (TokenType::IDENTIFIER, sa),
+        tok (TokenType::R_PAREN),
+        tok (TokenType::L_BRACE),
+        tok (TokenType::RETURN, "return"),
+        tok (TokenType::IDENTIFIER, sa),
+        tok (TokenType::SEMICOLON),
+        tok (TokenType::R_BRACE),
+        tok (TokenType::END_OF_FILE),
+    };
+
+    Parser parser {tokens};
+    Program prog = parser.parse ();
+
+    bool pass = prog.functions[0].params.size () == 1
+             && prog.functions[0].params[0].name == "a";
+
+    return TestResult {.name = "parse func one param", .pass = pass};
+}
+
+TestResult parse_func_multi_params ()
+{
+    // int f (int a, int b, int c) { return a; }
+    std::string sa = "a", sb = "b", sc = "c";
+    std::vector<Token> tokens =
+    {
+        tok (TokenType::INT_TYPE, "int"),
+        tok (TokenType::IDENTIFIER, "f"),
+        tok (TokenType::L_PAREN),
+        tok (TokenType::INT_TYPE, "int"),
+        tok (TokenType::IDENTIFIER, sa),
+        tok (TokenType::COMMA),
+        tok (TokenType::INT_TYPE, "int"),
+        tok (TokenType::IDENTIFIER, sb),
+        tok (TokenType::COMMA),
+        tok (TokenType::INT_TYPE, "int"),
+        tok (TokenType::IDENTIFIER, sc),
+        tok (TokenType::R_PAREN),
+        tok (TokenType::L_BRACE),
+        tok (TokenType::RETURN, "return"),
+        tok (TokenType::IDENTIFIER, sa),
+        tok (TokenType::SEMICOLON),
+        tok (TokenType::R_BRACE),
+        tok (TokenType::END_OF_FILE),
+    };
+
+    Parser parser {tokens};
+    Program prog = parser.parse ();
+
+    bool pass = prog.functions[0].params.size () == 3
+             && prog.functions[0].params[0].name == "a"
+             && prog.functions[0].params[1].name == "b"
+             && prog.functions[0].params[2].name == "c";
+
+    return TestResult {.name = "parse func multi params", .pass = pass};
+}
+
+TestResult parse_func_call ()
+{
+    // int main () { return f (1, 2); }
+    std::string s1 = "1", s2 = "2";
+    std::vector<Token> tokens =
+    {
+        tok (TokenType::INT_TYPE, "int"),
+        tok (TokenType::IDENTIFIER, "main"),
+        tok (TokenType::L_PAREN),
+        tok (TokenType::R_PAREN),
+        tok (TokenType::L_BRACE),
+        tok (TokenType::RETURN, "return"),
+        tok (TokenType::IDENTIFIER, "f"),
+        tok (TokenType::L_PAREN),
+        tok (TokenType::INT_LITERAL, s1),
+        tok (TokenType::COMMA),
+        tok (TokenType::INT_LITERAL, s2),
+        tok (TokenType::R_PAREN),
+        tok (TokenType::SEMICOLON),
+        tok (TokenType::R_BRACE),
+        tok (TokenType::END_OF_FILE),
+    };
+
+    Parser parser {tokens};
+    Program prog = parser.parse ();
+
+    auto& ret = std::get<ReturnStmt> (
+        prog.functions[0].body.statements[0].node);
+
+    bool pass = expr_is<FuncCall> (*ret.value);
+    if (pass)
+    {
+        auto& call = std::get<FuncCall> (ret.value->node);
+        pass = call.name == "f"
+            && call.args.size () == 2
+            && expr_is<IntLiteral> (*call.args[0])
+            && expr_is<IntLiteral> (*call.args[1]);
+    }
+
+    return TestResult {.name = "parse func call", .pass = pass};
+}
+
 /********** INTEGRATION TESTS **********/
 /**
  * Full program with multiple statements
@@ -683,6 +792,13 @@ int main ()
         parse_error_invalid_expr,
         parse_error_unclosed_paren,
     });
+
+    tb.add_family ("Functions",
+    {
+        parse_func_one_param,
+        parse_func_multi_params,
+        parse_func_call,
+    }, {"Expressions"});
 
     tb.add_family ("Integration",
     {

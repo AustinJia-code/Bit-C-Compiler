@@ -46,12 +46,22 @@ void Codegen::gen_function (const Function& func)
     next_var_offset_ = 0;
 
     // Label
-    std::string name = func.name == "main" ? "main" : func.name + "()";
-    emit (name + ":");
+    emit (func.name + ":");
 
     // Prologue
     emit ("    push rbp");
     emit ("    mov rbp, rsp");
+
+    // Move parameters from registers to local vars
+    static const char* arg_regs[] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
+    for (size_t i = 0; i < func.params.size () && i < 6; ++i)
+    {
+        next_var_offset_ -= 8;
+        var_offsets_[func.params[i].name] = next_var_offset_;
+        emit ("    sub rsp, 8");
+        emit ("    mov DWORD PTR [rbp +" +
+              std::to_string (next_var_offset_) + "], " + arg_regs[i]);
+    }
 
     // Body
     gen_block (func.body);
@@ -202,6 +212,25 @@ void Codegen::gen_expr (const Expr& expr)
                 emit ("    movzx eax, al");
             }
 
+            emit ("    push rax");
+        }
+
+        // Function call
+        else if constexpr (std::is_same_v<T, FuncCall>)
+        {
+            static const char* arg_regs_64[] = {"rdi", "rsi", "rdx",
+                                                "rcx", "r8", "r9"};
+
+            // Evaluate args left to right, push onto stack
+            for (auto& arg : node.args)
+                gen_expr (*arg);
+
+            // Pop args into registers in reverse
+            for (int i = static_cast<int> (node.args.size ()) - 1; i >= 0; --i)
+                emit ("    pop " + std::string {arg_regs_64[i]});
+
+            // Align stack to 16 bytes before call
+            emit ("    call " + node.name);
             emit ("    push rax");
         }
 

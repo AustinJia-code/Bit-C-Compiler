@@ -118,6 +118,7 @@ void Lexer::string_to_tokens ()
             case ')': type = TokenType::R_PAREN;   break;
             case '{': type = TokenType::L_BRACE;   break;
             case '}': type = TokenType::R_BRACE;   break;
+            case ',': type = TokenType::COMMA;     break;
             default: break;
         }
 
