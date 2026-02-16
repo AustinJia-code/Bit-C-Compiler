@@ -30,8 +30,6 @@ make
 ```
 
 ## Future Work
-* Assembler
-* Linker
 * Features
     * Memory (deref, address)
     * Operators (|, &, <<, >>)
@@ -40,6 +38,10 @@ make
     * Function return types
     * Comments (mult/single line)
     * Types (char, float)
-* Optimizations
-    * Constant folding (would cook all the testcases haha)
+* Optimizations (will force me to redo all tests...)
+    * Register allocation
+    * Constant folding
     * Loop unrolling
+<br>
+* Assembler
+* Linker
