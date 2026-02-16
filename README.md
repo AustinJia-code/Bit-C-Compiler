@@ -41,6 +41,5 @@ make
     * Register allocation
     * Constant folding
     * Loop unrolling
-<br>
 * Assembler
 * Linker
