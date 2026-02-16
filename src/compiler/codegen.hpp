@@ -26,8 +26,13 @@ class Codegen
 {
 private:
     size_t label_counter_;
-    size_t tab_counter_;
     std::vector<std::string> assembly_lines_;
+
+    void emit (const std::string& line);
+    void gen_function (const Function& func);
+    void gen_block (const Block& block);
+    void gen_stmt (const Stmt& stmt);
+    void gen_expr (const Expr& expr);
 
 public:
     /**

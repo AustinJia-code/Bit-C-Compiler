@@ -11,6 +11,8 @@
 #include <cstring>
 #include "lexer.hpp"
 #include "parser.hpp"
+#include "codegen.hpp"
+#include "file_utils.hpp"
 
 static constexpr size_t MAX_PATH_LEN = 64;
 
@@ -20,6 +22,7 @@ static constexpr size_t MAX_PATH_LEN = 64;
 struct Args
 {
     std::array<char, MAX_PATH_LEN> in_path;
+    std::array<char, MAX_PATH_LEN> out_path;
 };
 
 /**
@@ -29,15 +32,23 @@ struct Args
 std::optional<Args> parse_args (int argc, char* argv[])
 {
     // Check arg count
-    if (argc != 2)
+    if (argc != 3)
     {
-        std::cerr << "Usage: ./compiler <file>" << std::endl;
+        std::cerr << "Usage: ./compiler <in_path> -o <out_path>" << std::endl;
         return std::nullopt;
     }
 
     // Check file path len
-    std::string fp {argv[1]};
-    if (fp.length () > MAX_PATH_LEN - 1)
+    std::string in_path {argv[1]};
+    if (in_path.length () > MAX_PATH_LEN - 1)
+    {
+        std::cerr << "File path cannot exceed " << MAX_PATH_LEN << "chars"
+                  << std::endl;
+        return std::nullopt;
+    }
+
+    std::string out_path {argv[2]};
+    if (out_path.length () > MAX_PATH_LEN - 1)
     {
         std::cerr << "File path cannot exceed " << MAX_PATH_LEN << "chars"
                   << std::endl;
@@ -46,7 +57,8 @@ std::optional<Args> parse_args (int argc, char* argv[])
 
     // Return
     Args ret {};
-    memcpy (ret.in_path.data (), fp.c_str (), fp.size () + 1);
+    memcpy (ret.in_path.data (), in_path.c_str (), in_path.size () + 1);
+    memcpy (ret.out_path.data (), out_path.c_str (), out_path.size () + 1);
 
     return ret;
 }
@@ -65,10 +77,11 @@ int main (int argc, char* argv[])
     auto tokens = lexer.get_tokens ();
 
     // Parse tokens
+    Program program;
     try
     {
         Parser parser {tokens};
-        Program program = parser.parse ();
+        program = parser.parse ();
         std::cout << "Parsing successful: "
                   << program.functions.size () << " function(s)" << std::endl;
     }
@@ -77,6 +90,17 @@ int main (int argc, char* argv[])
         std::cerr << "Parse error [" << e.loc.line << ":"
                   << e.loc.col << "]: " << e.what () << std::endl;
         return EXIT_FAILURE;
+    }
+
+    // Generate assembly
+    try
+    {
+        Codegen codegen {program};
+        string_to_file (codegen.get_assembly (), args->out_path.data ());
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << "Codegen error: " << e.what() << std::endl;
     }
 
     return EXIT_SUCCESS;

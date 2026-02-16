@@ -13,6 +13,8 @@ int main ()
 {
     Testbench tb {};
 
+    // Too lazy to do these... full compiler tests should be enough
+
     tb.run_tests ();
     tb.print_results ();
 }
