@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <string>
+#include <unordered_map>
 #include "ast.hpp"
 
 /**
@@ -20,13 +21,17 @@ public:
 };
 
 /**
- * Codegen
+ * Codegen (stack-based expression evaluation)
  */
 class Codegen
 {
 private:
     size_t label_counter_;
     std::vector<std::string> assembly_lines_;
+
+    // Local variable tracking (name to rbp offset)
+    std::unordered_map<std::string, int> var_offsets_;
+    int next_var_offset_;
 
     void emit (const std::string& line);
     void gen_function (const Function& func);
