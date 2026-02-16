@@ -117,6 +117,8 @@ int main ()
         stf_spaces
     }, {"file_to_string"});
 
+    // TODO: Add global file path tests
+
     tb.run_tests ();
     tb.print_results ();
 }

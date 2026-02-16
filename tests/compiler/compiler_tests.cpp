@@ -13,27 +13,31 @@
 /**
  * Compiles and runs asm in output folder, returns exit code
  */
-int compile_and_run_out (const std::string& asm_file)
+bool check_compiler (const std::string& source, const std::string& asm_dest,
+                     const std::string& bin_dest, const std::string& sol_bin)
 {
-    // Compile
-    std::string in_path = get_full_path ("out/" + asm_file + ".s");
-    std::string out_path = get_full_path ("out/" + asm_file);
-    std::string cmd = "g++ " + in_path + " -o " + out_path;
+    std::string compile_cmd {"./compiler " + source + " -o " + asm_dest};
+    std::cout << compile_cmd << std::endl;
+    system (compile_cmd.data ());
 
-    std::cout << cmd << std::endl;
-    int compile_status = system (cmd.data ());
-    if (WEXITSTATUS (compile_status) != 0)
-        return -1;
+    std::string assemble_cmd {"g++ " + asm_dest + " -o " + bin_dest};
+    system (assemble_cmd.data ());
 
-    // Run
-    int run_status = system (out_path.data ());
-    return WEXITSTATUS (run_status);
+    int run_status = system (bin_dest.data ());
+    int exit_code = WEXITSTATUS (run_status);
+
+    run_status = system (sol_bin.data ());
+    int sol_code = WEXITSTATUS (run_status);
+
+    // Check both assembly and output
+    return file_to_string (asm_dest) == file_to_string ("examples/return/return.s")      
+        && exit_code == sol_code;
 }
 
 /**
- * gen: no main
+ * pip: no main
  */
-TestResult gen_no_main ()
+TestResult pip_no_main ()
 {
     Lexer lexer {"int bad_func () { return 1; }", false};
     Parser parser {lexer.get_tokens ()};
@@ -50,23 +54,20 @@ TestResult gen_no_main ()
 }
 
 /**
- * gen: minimal c file
+ * com: return only c file
  */
-TestResult gen_minimal ()
+TestResult com_return ()
 {
-    Lexer lexer {"examples/minimal/minimal.c"};
-    Parser parser {lexer.get_tokens ()};
-    Codegen cg {parser.parse ()};
+    std::string source = get_full_path ("examples/return/return.c");
+    std::string asm_dest = get_full_path ("out/return.s");
+    std::string bin_dest = get_full_path ("out/return");
+    std::string sol_bin = get_full_path ("examples/return/return");
 
-    std::string assembly_str = cg.get_assembly ();
-    string_to_file (assembly_str, "out/minimal.s");
-
-    // Check both assembly and output
-    bool pass = assembly_str == file_to_string ("examples/minimal/minimal.s")
-             && compile_and_run_out ("minimal") == 42;
-
-    return TestResult {.name = "gen minimal",
-                       .pass = pass};
+    return TestResult
+    {
+        .name = "gen return",
+        .pass = check_compiler (source, asm_dest, bin_dest, sol_bin)
+    };
 }
 
 /**
@@ -76,11 +77,16 @@ int main ()
 {
     Testbench tb {};
 
+    tb.add_family ("pipeline",
+    {
+        pip_no_main,
+    }, {"lexer", "parser", "codegen", "file_utils"});
+
     tb.add_family ("compiler",
     {
-        gen_no_main,
-        gen_minimal,
+        com_return,
     }, {"lexer", "parser", "codegen", "file_utils"});
+
 
     tb.run_tests ();
     tb.print_results ();

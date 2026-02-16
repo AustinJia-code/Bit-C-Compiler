@@ -8,7 +8,7 @@
 #include <string>
 
 Codegen::Codegen (const Program& prog)
-    : label_counter_ {0}
+    : label_counter_ {2}
 {
     // Scan for main
     bool found_main = false;
@@ -90,7 +90,7 @@ std::string Codegen::get_assembly () const
 {
     std::string assembly_str {};
 
-    // To match godbolt output
+    // To make g++ happy (not included in godbolt gens)
     assembly_str.append (".intel_syntax noprefix\n.global main\n\n");
 
     for (size_t line_num = 0; line_num < assembly_lines_.size (); ++line_num)

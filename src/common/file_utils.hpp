@@ -14,10 +14,17 @@
 /**
  * Read file contents into a string
  * Returns empty string on failure
+ * 
+ * Assumes path starting with '/' is global, else appends to project root
  */
 inline std::string file_to_string (const std::string& path)
 {
-    std::ifstream file (get_full_path (path));
+    if (path.size () < 1)
+        return "";
+
+    std::string file_path = path[0] == '/' ? path : get_full_path (path);
+
+    std::ifstream file (file_path);
 
     if (!file.is_open ())
     {
@@ -31,10 +38,14 @@ inline std::string file_to_string (const std::string& path)
 
 /**
  * Overwrites file with string
+ * 
+ * Assumes path starting with '/' is global, else appends to project root
  */
 inline void string_to_file (const std::string& str, const std::string& path)
 {
-    std::ofstream file (get_full_path (path));
+    std::string file_path = path[0] == '/' ? path : get_full_path (path);
+
+    std::ofstream file (file_path);
 
     if (!file.is_open ())
     {

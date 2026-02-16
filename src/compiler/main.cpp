@@ -32,7 +32,7 @@ struct Args
 std::optional<Args> parse_args (int argc, char* argv[])
 {
     // Check arg count
-    if (argc != 3)
+    if (argc != 4)
     {
         std::cerr << "Usage: ./compiler <in_path> -o <out_path>" << std::endl;
         return std::nullopt;
@@ -47,7 +47,7 @@ std::optional<Args> parse_args (int argc, char* argv[])
         return std::nullopt;
     }
 
-    std::string out_path {argv[2]};
+    std::string out_path {argv[3]};
     if (out_path.length () > MAX_PATH_LEN - 1)
     {
         std::cerr << "File path cannot exceed " << MAX_PATH_LEN << "chars"
@@ -91,7 +91,7 @@ int main (int argc, char* argv[])
                   << e.loc.col << "]: " << e.what () << std::endl;
         return EXIT_FAILURE;
     }
-
+    
     // Generate assembly
     try
     {

@@ -10,7 +10,7 @@
 #include "ast.hpp"
 
 /**
- * Parse error with source location
+ * Codegen error
  */
 class GenError : public std::runtime_error
 {

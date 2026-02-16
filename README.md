@@ -40,4 +40,6 @@ make
     * Function return types
     * Comments (mult/single line)
     * Types (char, float)
-* Optimizations (never getting here)
+* Optimizations
+    * Constant folding (would cook all the testcases haha)
+    * Loop unrolling
