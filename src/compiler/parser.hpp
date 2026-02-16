@@ -40,7 +40,7 @@ public:
     Program parse ();
 
 private:
-    const std::vector<Token>& tokens_;
+    std::vector<Token> tokens_;
     size_t current_ = 0;
 
     /********** TOKEN NAVIGATION **********/

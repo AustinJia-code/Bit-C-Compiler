@@ -5,9 +5,19 @@
 
 #pragma once
 
-#include "ast.hpp"
 #include <vector>
 #include <string>
+#include "ast.hpp"
+
+/**
+ * Parse error with source location
+ */
+class GenError : public std::runtime_error
+{
+public:
+    GenError (const std::string& msg)
+        : std::runtime_error (msg) {}
+};
 
 /**
  * Codegen
@@ -15,10 +25,18 @@
 class Codegen
 {
 private:
-    size_t label_counter;
-    size_t tab_counter;
-    std::vector<std::string> assembly;
+    size_t label_counter_;
+    size_t tab_counter_;
+    std::vector<std::string> assembly_lines_;
 
 public:
-    std::string gen (const Program& prog);
+    /**
+     * Program constructor
+     */
+    Codegen (const Program& program);
+
+    /**
+     * Get generated assembly as a string
+     */
+    std::string get_assembly () const;
 };

@@ -15,9 +15,9 @@
 class Lexer
 {
 private:
-    std::string file_path;
-    std::string input;
-    std::vector<Token> tokens;
+    std::string file_path_;
+    std::string input_;
+    std::vector<Token> tokens_;
 
     /**
      * Converts input string into tokens

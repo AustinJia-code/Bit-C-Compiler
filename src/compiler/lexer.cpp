@@ -13,14 +13,14 @@
 
 void Lexer::string_to_tokens ()
 {
-    this->tokens = {};
+    this->tokens_ = {};
     size_t i = 0;
     size_t line = 1;
     size_t col = 1;
 
-    while (i < input.size ())
+    while (i < input_.size ())
     {
-        char c = input[i];
+        char c = input_[i];
 
         // Skip whitespace
         if (std::isspace (c))
@@ -43,14 +43,14 @@ void Lexer::string_to_tokens ()
         {
             size_t start = i;
             size_t start_col = col;
-            while (i < input.size () && std::isdigit (input[i]))
+            while (i < input_.size () && std::isdigit (input_[i]))
             {
                 i++;
                 col++;
             }
-            this->tokens.push_back ({TokenType::INT_LITERAL,
+            this->tokens_.push_back ({TokenType::INT_LITERAL,
                                     {line, start_col},
-                                    std::string_view {input.data () + start,
+                                    std::string_view {input_.data () + start,
                                                        i - start}});
             continue;
         }
@@ -60,13 +60,13 @@ void Lexer::string_to_tokens ()
         {
             size_t start = i;
             size_t start_col = col;
-            while (i < input.size ()
-               && (std::isalnum (input[i]) || input[i] == '_'))
+            while (i < input_.size ()
+               && (std::isalnum (input_[i]) || input_[i] == '_'))
             {
                 i++;
                 col++;
             }
-            std::string_view lexeme {input.data () + start, i - start};
+            std::string_view lexeme {input_.data () + start, i - start};
 
             TokenType type = TokenType::IDENTIFIER;
             if (lexeme == "int")         type = TokenType::INT_TYPE;
@@ -74,14 +74,14 @@ void Lexer::string_to_tokens ()
             else if (lexeme == "if")     type = TokenType::IF;
             else if (lexeme == "while")  type = TokenType::WHILE;
 
-            this->tokens.push_back ({type, {line, start_col}, lexeme});
+            this->tokens_.push_back ({type, {line, start_col}, lexeme});
             continue;
         }
 
         // Two-character operators
-        if (i + 1 < input.size ())
+        if (i + 1 < input_.size ())
         {
-            char next = input[i + 1];
+            char next = input_[i + 1];
             TokenType token_type = TokenType::UNKNOWN;
 
             if (c == '=' && next == '=') token_type = TokenType::EQ_CMP;
@@ -91,9 +91,9 @@ void Lexer::string_to_tokens ()
 
             if (token_type != TokenType::UNKNOWN)
             {
-                this->tokens.push_back ({token_type,
+                this->tokens_.push_back ({token_type,
                                         {line, col},
-                                        std::string_view {input.data () + i,
+                                        std::string_view {input_.data () + i,
                                                           2}});
                 i += 2;
                 col += 2;
@@ -121,37 +121,37 @@ void Lexer::string_to_tokens ()
             default: break;
         }
 
-        this->tokens.push_back ({type,
+        this->tokens_.push_back ({type,
                                 {line, col},
-                                std::string_view {input.data () + i, 1}});
+                                std::string_view {input_.data () + i, 1}});
         ++i;
         ++col;
     }
 
-    this->tokens.push_back ({TokenType::END_OF_FILE,
+    this->tokens_.push_back ({TokenType::END_OF_FILE,
                             {line, col},
                             {}});
 }
 
 Lexer::Lexer (const std::string& in_str, bool file_flag)
-    : tokens {}
+    : tokens_ {}
 {
     if (file_flag)
     {
-        this->file_path = in_str;
-        this->input = file_to_string (in_str);
+        this->file_path_ = in_str;
+        this->input_ = file_to_string (in_str);
     }
     else
     {
-        this->file_path = {};
-        this->input = in_str;
+        this->file_path_ = {};
+        this->input_ = in_str;
     }
 }
 
 std::vector<Token> Lexer::get_tokens ()
 {
-    if (this->tokens.empty ())
+    if (this->tokens_.empty ())
         this->string_to_tokens ();
     
-    return tokens;
+    return tokens_;
 }
