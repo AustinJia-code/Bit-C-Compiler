@@ -35,8 +35,6 @@ make
     * Memory (deref, address)
     * Operators (|, &, <<, >>)
     * Structs, unions
-    * Function params
-    * Function return types
     * Comments (mult/single line)
     * Types (char, float)
 * Optimizations (will force me to redo all tests...)
