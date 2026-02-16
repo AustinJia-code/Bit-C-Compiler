@@ -12,7 +12,7 @@ Supported Ops:
 * if
 * while
 * return
-* int function definitions (no params)
+* int function definitions with int params
 * local variables
     * alphanumeric and underscores
 
@@ -31,6 +31,7 @@ make
 
 ## Future Work
 * Features
+    * Safety
     * Memory (deref, address)
     * Operators (|, &, <<, >>)
     * Structs, unions
