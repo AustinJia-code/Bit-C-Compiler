@@ -4,6 +4,8 @@
 main:
     push rbp
     mov rbp, rsp
-    mov eax, 42
+    push 42
+    pop eax
+    mov rsp, rbp
     pop rbp
     ret

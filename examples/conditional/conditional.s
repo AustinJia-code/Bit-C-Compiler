@@ -2,18 +2,26 @@
 .global main
 
 main:
-        push rbp
-        mov rbp, rsp
-        mov edx, 1
-        mov eax, 5
-        cmp edx, eax
-        setl al
-        test al, al
-        je .L2
-        mov eax, 42
-        jmp .L3
+    push rbp
+    mov rbp, rsp
+    push 1
+    push 5
+    pop ebx
+    pop eax
+    cmp eax, ebx
+    setl al
+    movzx eax, al
+    push eax
+    pop eax
+    test eax, eax
+    je .L2
+    push 42
+    pop eax
+    jmp .L3
 .L2:
-        mov eax, 13
 .L3:
-        pop rbp
-        ret
+    push 13
+    pop eax
+    mov rsp, rbp
+    pop rbp
+    ret
