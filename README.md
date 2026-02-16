@@ -15,7 +15,6 @@ Supported Ops:
 * int function definitions (no params)
 * local variables
     * alphanumeric and underscores
-    * Max 32 chars
 
 ## Build & Run
 1. Replace path in ```src/common/paths.hpp```
@@ -40,3 +39,4 @@ make
     * Function params
     * Function return types
     * Comments (mult/single line)
+    * Types (char, float)
