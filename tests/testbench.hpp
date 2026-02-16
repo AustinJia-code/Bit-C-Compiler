@@ -79,7 +79,10 @@ private:
         // Check dependencies
         for (const auto& dep : family.depends_on)
         {
-            TestFamily dep_family = families[find_family (dep)];
+            int idx = find_family (dep);
+            if (idx < 0) continue;
+
+            TestFamily& dep_family = families[idx];
             if (!dep_family.evaluated)
                 test_family (dep_family);
 
@@ -212,7 +215,8 @@ public:
                      std::vector <std::function<TestResult ()>> tests,
                      std::vector <std::string> depends_on = {})
     {
-        families.push_back (TestFamily {
+        families.push_back (TestFamily
+        {
             .name       = name,
             .tests      = std::move (tests),
             .depends_on = std::move (depends_on),

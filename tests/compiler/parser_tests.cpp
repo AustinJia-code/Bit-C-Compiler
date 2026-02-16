@@ -43,7 +43,8 @@ bool stmt_is (const Stmt& s)
 TestResult parse_int_literal ()
 {
     // int main () { return 42; }
-    std::vector<Token> tokens = {
+    std::vector<Token> tokens =
+    {
         tok (TokenType::INT_TYPE, "int"),
         tok (TokenType::IDENTIFIER, "main"),
         tok (TokenType::L_PAREN),
@@ -74,7 +75,8 @@ TestResult parse_precedence ()
 {
     // int f () { return 1 + 2 * 3; }
     std::string s1 = "1", s2 = "2", s3 = "3";
-    std::vector<Token> tokens = {
+    std::vector<Token> tokens =
+    {
         tok (TokenType::INT_TYPE, "int"),
         tok (TokenType::IDENTIFIER, "f"),
         tok (TokenType::L_PAREN),
@@ -122,7 +124,8 @@ TestResult parse_unary_negate ()
 {
     // int f () { return -5; }
     std::string s5 = "5";
-    std::vector<Token> tokens = {
+    std::vector<Token> tokens =
+    {
         tok (TokenType::INT_TYPE, "int"),
         tok (TokenType::IDENTIFIER, "f"),
         tok (TokenType::L_PAREN),
@@ -161,7 +164,8 @@ TestResult parse_comparison ()
 {
     // int f () { return a < b; }
     std::string sa = "a", sb = "b";
-    std::vector<Token> tokens = {
+    std::vector<Token> tokens =
+    {
         tok (TokenType::INT_TYPE, "int"),
         tok (TokenType::IDENTIFIER, "f"),
         tok (TokenType::L_PAREN),
@@ -200,7 +204,8 @@ TestResult parse_logical_ops ()
 {
     // int f () { return a && b || c; }
     std::string sa = "a", sb = "b", sc = "c";
-    std::vector<Token> tokens = {
+    std::vector<Token> tokens =
+    {
         tok (TokenType::INT_TYPE, "int"),
         tok (TokenType::IDENTIFIER, "f"),
         tok (TokenType::L_PAREN),
@@ -248,7 +253,8 @@ TestResult parse_parens ()
 {
     // int f () { return (1 + 2) * 3; }
     std::string s1 = "1", s2 = "2", s3 = "3";
-    std::vector<Token> tokens = {
+    std::vector<Token> tokens =
+    {
         tok (TokenType::INT_TYPE, "int"),
         tok (TokenType::IDENTIFIER, "f"),
         tok (TokenType::L_PAREN),
@@ -298,7 +304,8 @@ TestResult parse_var_decl_no_init ()
 {
     // int f () { int x; }
     std::string sx = "x";
-    std::vector<Token> tokens = {
+    std::vector<Token> tokens =
+    {
         tok (TokenType::INT_TYPE, "int"),
         tok (TokenType::IDENTIFIER, "f"),
         tok (TokenType::L_PAREN),
@@ -332,7 +339,8 @@ TestResult parse_var_decl_with_init ()
 {
     // int f () { int x = 10; }
     std::string sx = "x", s10 = "10";
-    std::vector<Token> tokens = {
+    std::vector<Token> tokens =
+    {
         tok (TokenType::INT_TYPE, "int"),
         tok (TokenType::IDENTIFIER, "f"),
         tok (TokenType::L_PAREN),
@@ -371,7 +379,8 @@ TestResult parse_assignment ()
 {
     // int f () { x = 5; }
     std::string sx = "x", s5 = "5";
-    std::vector<Token> tokens = {
+    std::vector<Token> tokens =
+    {
         tok (TokenType::INT_TYPE, "int"),
         tok (TokenType::IDENTIFIER, "f"),
         tok (TokenType::L_PAREN),
@@ -407,7 +416,8 @@ TestResult parse_assignment ()
 TestResult parse_if_stmt ()
 {
     std::string sx = "x", s1 = "1";
-    std::vector<Token> tokens = {
+    std::vector<Token> tokens =
+    {
         tok (TokenType::INT_TYPE, "int"),
         tok (TokenType::IDENTIFIER, "f"),
         tok (TokenType::L_PAREN),
@@ -448,7 +458,8 @@ TestResult parse_if_stmt ()
 TestResult parse_while_stmt ()
 {
     std::string sx = "x", s0 = "0";
-    std::vector<Token> tokens = {
+    std::vector<Token> tokens =
+    {
         tok (TokenType::INT_TYPE, "int"),
         tok (TokenType::IDENTIFIER, "f"),
         tok (TokenType::L_PAREN),
@@ -491,7 +502,8 @@ TestResult parse_while_stmt ()
 TestResult parse_error_missing_semicolon ()
 {
     std::string s1 = "1";
-    std::vector<Token> tokens = {
+    std::vector<Token> tokens =
+    {
         tok (TokenType::INT_TYPE, "int"),
         tok (TokenType::IDENTIFIER, "f"),
         tok (TokenType::L_PAREN),
@@ -523,7 +535,8 @@ TestResult parse_error_missing_semicolon ()
  */
 TestResult parse_error_invalid_expr ()
 {
-    std::vector<Token> tokens = {
+    std::vector<Token> tokens =
+    {
         tok (TokenType::INT_TYPE, "int"),
         tok (TokenType::IDENTIFIER, "f"),
         tok (TokenType::L_PAREN),
@@ -557,7 +570,8 @@ TestResult parse_error_invalid_expr ()
 TestResult parse_error_unclosed_paren ()
 {
     std::string s1 = "1";
-    std::vector<Token> tokens = {
+    std::vector<Token> tokens =
+    {
         tok (TokenType::INT_TYPE, "int"),
         tok (TokenType::IDENTIFIER, "f"),
         tok (TokenType::L_PAREN),
@@ -595,7 +609,8 @@ TestResult parse_full_program ()
     // int main () { int x = 1; int y = 2; return x + y; }
     std::string sm = "main", sx = "x", sy = "y";
     std::string s1 = "1", s2 = "2";
-    std::vector<Token> tokens = {
+    std::vector<Token> tokens =
+    {
         tok (TokenType::INT_TYPE, "int"),
         tok (TokenType::IDENTIFIER, sm),
         tok (TokenType::L_PAREN),

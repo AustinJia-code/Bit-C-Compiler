@@ -8,6 +8,8 @@
 #include <file_utils.hpp>
 #include <string>
 
+inline const char* out_path = "out/test.txt";
+
 /**
  * file_to_string: bad path returns empty string
  */
@@ -26,7 +28,7 @@ TestResult fts_bad_path ()
  */
 TestResult fts_valid_file ()
 {
-    std::string result = file_to_string ("/examples/statement.txt");
+    std::string result = file_to_string ("/examples/txt/statement.txt");
 
     bool pass = result == "int x = 5;";
 
@@ -39,7 +41,7 @@ TestResult fts_valid_file ()
  */
 TestResult fts_multiline ()
 {
-    std::string result = file_to_string ("/examples/sentence.txt");
+    std::string result = file_to_string ("/examples/txt/sentence.txt");
 
     bool pass = result == "This is a \nnew line.";
 
@@ -52,7 +54,7 @@ TestResult fts_multiline ()
  */
 TestResult fts_nested_bad_path ()
 {
-    std::string result = file_to_string ("/no/such/dir/file.txt");
+    std::string result = file_to_string ("/no/such/dir/txt/file.txt");
 
     bool pass = result.empty ();
 
@@ -66,9 +68,8 @@ TestResult fts_nested_bad_path ()
 TestResult stf_basic ()
 {
     std::string str {"This is just a test..."};
-    std::string path {"out/test.txt"};
 
-    string_to_file (str, path);
+    string_to_file (str, out_path);
     std::cout << file_to_string ("out/test.txt") << std::endl;
     std::cout << str << std::endl;
 
@@ -84,9 +85,8 @@ TestResult stf_basic ()
 TestResult stf_spaces ()
 {
     std::string str {"This \nis\t\t just a test..."};
-    std::string path {"out/test.txt"};
 
-    string_to_file (str, path);
+    string_to_file (str, out_path);
     std::cout << file_to_string ("out/test.txt") << std::endl;
     std::cout << str << std::endl;
 
