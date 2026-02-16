@@ -26,7 +26,7 @@ make
 ```
 3. Run:
 ```
-./compiler <PATH_TO_FILE>
+./compiler <PATH_TO_FILE> -o <PATH_TO_OUT>
 ```
 
 ## Future Work
@@ -40,3 +40,4 @@ make
     * Function return types
     * Comments (mult/single line)
     * Types (char, float)
+* Optimizations (never getting here)
