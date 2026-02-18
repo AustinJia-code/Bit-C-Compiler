@@ -34,7 +34,7 @@ int run_source (const std::string& source)
 }
 
 /********** Pipeline error tests **********/
-TestResult pip_no_main ()
+bool pip_no_main ()
 {
     Lexer lexer {"int bad_func () { return 1; }", false};
     Parser parser {lexer.get_tokens ()};
@@ -42,177 +42,157 @@ TestResult pip_no_main ()
     try
     {
         Codegen cg {parser.parse ()};
-        return TestResult {.name = "no main", .pass = false};
+        return false;
     }
     catch (const GenError&)
     {
-        return TestResult {.name = "no main", .pass = true};
+        return true;
     }
 }
 
 /********** Return tests **********/
-TestResult com_return_literal ()
+bool com_return_literal ()
 {
-    int code = run_source ("int main () { return 42; }");
-    return TestResult {.name = "return literal", .pass = code == 42};
+    return run_source ("int main () { return 42; }") == 42;
 }
 
-TestResult com_return_zero ()
+bool com_return_zero ()
 {
-    int code = run_source ("int main () { return 0; }");
-    return TestResult {.name = "return zero", .pass = code == 0};
+    return run_source ("int main () { return 0; }") == 0;
 }
 
 /********** Arithmetic tests **********/
-TestResult com_add ()
+bool com_add ()
 {
-    int code = run_source ("int main () { return 10 + 20; }");
-    return TestResult {.name = "add", .pass = code == 30};
+    return run_source ("int main () { return 10 + 20; }") == 30;
 }
 
-TestResult com_sub ()
+bool com_sub ()
 {
-    int code = run_source ("int main () { return 50 - 8; }");
-    return TestResult {.name = "sub", .pass = code == 42};
+    return run_source ("int main () { return 50 - 8; }") == 42;
 }
 
-TestResult com_mul ()
+bool com_mul ()
 {
-    int code = run_source ("int main () { return 6 * 7; }");
-    return TestResult {.name = "mul", .pass = code == 42};
+    return run_source ("int main () { return 6 * 7; }") == 42;
 }
 
-TestResult com_div ()
+bool com_div ()
 {
-    int code = run_source ("int main () { return 84 / 2; }");
-    return TestResult {.name = "div", .pass = code == 42};
+    return run_source ("int main () { return 84 / 2; }") == 42;
 }
 
-TestResult com_precedence ()
+bool com_precedence ()
 {
-    int code = run_source ("int main () { return 2 + 3 * 4; }");
-    return TestResult {.name = "precedence", .pass = code == 14};
+    return run_source ("int main () { return 2 + 3 * 4; }") == 14;
 }
 
-TestResult com_nested_arith ()
+bool com_nested_arith ()
 {
-    int code = run_source ("int main () { return (2 + 3) * (10 - 4); }");
-    return TestResult {.name = "nested arith", .pass = code == 30};
+    return run_source ("int main () { return (2 + 3) * (10 - 4); }") == 30;
 }
 
 /********** Comparison tests **********/
-TestResult com_lt_true ()
+bool com_lt_true ()
 {
-    int code = run_source ("int main () { return 1 < 5; }");
-    return TestResult {.name = "lt true", .pass = code == 1};
+    return run_source ("int main () { return 1 < 5; }") == 1;
 }
 
-TestResult com_lt_false ()
+bool com_lt_false ()
 {
-    int code = run_source ("int main () { return 5 < 1; }");
-    return TestResult {.name = "lt false", .pass = code == 0};
+    return run_source ("int main () { return 5 < 1; }") == 0;
 }
 
-TestResult com_gt_true ()
+bool com_gt_true ()
 {
-    int code = run_source ("int main () { return 5 > 1; }");
-    return TestResult {.name = "gt true", .pass = code == 1};
+    return run_source ("int main () { return 5 > 1; }") == 1;
 }
 
-TestResult com_eq_true ()
+bool com_eq_true ()
 {
-    int code = run_source ("int main () { return 42 == 42; }");
-    return TestResult {.name = "eq true", .pass = code == 1};
+    return run_source ("int main () { return 42 == 42; }") == 1;
 }
 
-TestResult com_eq_false ()
+bool com_eq_false ()
 {
-    int code = run_source ("int main () { return 42 == 13; }");
-    return TestResult {.name = "eq false", .pass = code == 0};
+    return run_source ("int main () { return 42 == 13; }") == 0;
 }
 
 /********** If tests **********/
-TestResult com_if_true ()
+bool com_if_true ()
 {
-    int code = run_source
+    return run_source
     (
         "int main () {"
         "    if (1 < 5) { return 42; }"
         "    return 13;"
         "}"
-    );
-    return TestResult {.name = "if true", .pass = code == 42};
+    ) == 42;
 }
 
-TestResult com_if_false ()
+bool com_if_false ()
 {
-    int code = run_source
+    return run_source
     (
         "int main () {"
         "    if (5 < 1) { return 42; }"
         "    return 13;"
         "}"
-    );
-    return TestResult {.name = "if false", .pass = code == 13};
+    ) == 13;
 }
 
 /********** Variable tests **********/
-TestResult com_var_decl ()
+bool com_var_decl ()
 {
-    int code = run_source
+    return run_source
     (
         "int main () {"
         "    int x = 42;"
         "    return x;"
         "}"
-    );
-    return TestResult {.name = "var decl", .pass = code == 42};
+    ) == 42;
 }
 
-TestResult com_var_assign ()
+bool com_var_assign ()
 {
-    int code = run_source
+    return run_source
     (
         "int main () {"
         "    int x = 1;"
         "    x = 42;"
         "    return x;"
         "}"
-    );
-    return TestResult {.name = "var assign", .pass = code == 42};
+    ) == 42;
 }
 
-TestResult com_var_arith ()
+bool com_var_arith ()
 {
-    int code = run_source
+    return run_source
     (
         "int main () {"
         "    int a = 10;"
         "    int b = 32;"
         "    return a + b;"
         "}"
-    );
-    return TestResult {.name = "var arith", .pass = code == 42};
+    ) == 42;
 }
 
 /********** While tests **********/
-TestResult com_while ()
+bool com_while ()
 {
-    int code = run_source
-
+    return run_source
     (
         "int main () {"
         "    int x = 0;"
         "    while (x < 10) { x = x + 1; }"
         "    return x;"
         "}"
-    );
-    return TestResult {.name = "while loop", .pass = code == 10};
+    ) == 10;
 }
 
-TestResult com_while_sum ()
+bool com_while_sum ()
 {
-    int code = run_source
+    return run_source
     (
         "int main () {"
         "    int i = 0;"
@@ -223,50 +203,45 @@ TestResult com_while_sum ()
         "    }"
         "    return sum;"
         "}"
-    );
-    return TestResult {.name = "while sum", .pass = code == 10};
+    ) == 10;
 }
 
 /********** Function call tests **********/
-TestResult com_call_one_param ()
+bool com_call_one_param ()
 {
-    int code = run_source
+    return run_source
     (
         "int id (int x) { return x; }"
         "int main () { return id (42); }"
-    );
-    return TestResult {.name = "call one param", .pass = code == 42};
+    ) == 42;
 }
 
-TestResult com_call_two_params ()
+bool com_call_two_params ()
 {
-    int code = run_source
+    return run_source
     (
         "int add (int a, int b) { return a + b; }"
         "int main () { return add (10, 32); }"
-    );
-    return TestResult {.name = "call two params", .pass = code == 42};
+    ) == 42;
 }
 
-TestResult com_call_expr_args ()
+bool com_call_expr_args ()
 {
-    int code = run_source
+    return run_source
     (
         "int add (int a, int b) { return a + b; }"
         "int main () { return add (2 + 3, 7 * 5); }"
-    );
-    return TestResult {.name = "call expr args", .pass = code == 40};
+    ) == 40;
 }
 
-TestResult com_nested_calls ()
+bool com_nested_calls ()
 {
-    int code = run_source
+    return run_source
     (
         "int double_it (int x) { return x + x; }"
         "int inc (int x) { return x + 1; }"
         "int main () { return double_it (inc (20)); }"
-    );
-    return TestResult {.name = "nested calls", .pass = code == 42};
+    ) == 42;
 }
 
 /**
@@ -278,59 +253,59 @@ int main ()
 
     tb.add_family ("pipeline",
     {
-        pip_no_main,
+        {pip_no_main,           "no main"},
     }, {"file_utils", "lexer", "parser", "compiler"});
 
     tb.add_family ("return",
     {
-        com_return_literal,
-        com_return_zero,
+        {com_return_literal,    "return literal"},
+        {com_return_zero,       "return zero"},
     }, {"pipeline"});
 
     tb.add_family ("arithmetic",
     {
-        com_add,
-        com_sub,
-        com_mul,
-        com_div,
-        com_precedence,
-        com_nested_arith,
+        {com_add,               "add"},
+        {com_sub,               "sub"},
+        {com_mul,               "mul"},
+        {com_div,               "div"},
+        {com_precedence,        "precedence"},
+        {com_nested_arith,      "nested arith"},
     }, {"return"});
 
     tb.add_family ("comparison",
     {
-        com_lt_true,
-        com_lt_false,
-        com_gt_true,
-        com_eq_true,
-        com_eq_false,
+        {com_lt_true,           "lt true"},
+        {com_lt_false,          "lt false"},
+        {com_gt_true,           "gt true"},
+        {com_eq_true,           "eq true"},
+        {com_eq_false,          "eq false"},
     }, {"return"});
 
     tb.add_family ("conditional",
     {
-        com_if_true,
-        com_if_false,
+        {com_if_true,           "if true"},
+        {com_if_false,          "if false"},
     }, {"comparison"});
 
     tb.add_family ("variables",
     {
-        com_var_decl,
-        com_var_assign,
-        com_var_arith,
+        {com_var_decl,          "var decl"},
+        {com_var_assign,        "var assign"},
+        {com_var_arith,         "var arith"},
     }, {"return"});
 
     tb.add_family ("loops",
     {
-        com_while,
-        com_while_sum,
+        {com_while,             "while loop"},
+        {com_while_sum,         "while sum"},
     }, {"variables"});
 
     tb.add_family ("functions",
     {
-        com_call_one_param,
-        com_call_two_params,
-        com_call_expr_args,
-        com_nested_calls,
+        {com_call_one_param,    "call one param"},
+        {com_call_two_params,   "call two params"},
+        {com_call_expr_args,    "call expr args"},
+        {com_nested_calls,      "nested calls"},
     }, {"return"});
 
     tb.run_tests ();

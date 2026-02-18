@@ -11,23 +11,65 @@
 #include <functional>
 #include <unordered_set>
 #include <unordered_map>
+#include <stdexcept>
+#include <timer.hpp>
+
+/**
+ * Tests status
+ */
+enum TestStatus
+{
+    NONE,
+    STARTED,
+    PASS,
+    FAIL,
+    TIMEOUT,
+    ERROR
+};
 
 /**
  * Result struct
  */
-struct TestResult
+struct Test
 {
     std::string name;
-    bool pass;
+    std::function<bool ()> func;
+    TestStatus status;
+    ms_t timeout = 0;  // per-test override (0 = use testbench default)
+
+    Test (std::function<bool ()> func, const std::string& name,
+          ms_t timeout = 0)
+        : func (func), name (name), timeout (timeout) {};
 };
 
 /**
- * Overload TestResult stream insertion
+ * Overload Test stream insertion
  */
-std::ostream& operator << (std::ostream& os, const TestResult& obj)
+std::ostream& operator << (std::ostream& os, const Test& obj)
 {
-    const char* status_str = obj.pass ? "\033[32mPASS" :
-                                        "\033[31mFAIL";
+    const char* status_str;
+    switch (obj.status)
+    {
+        case STARTED:
+            status_str = "STARTED";
+            break;
+        case PASS:
+            status_str = "\033[32mPASS";
+            break;
+        case FAIL:
+            status_str = "\033[31mFAIL";
+            break;
+        case TIMEOUT:
+            status_str = "\033[31mTIMEOUT";
+            break;
+        case ERROR:
+            status_str = "\033[31mERROR";
+        default:
+            status_str = "NONE";
+            break;
+
+    }
+
     os << status_str << " --- " << obj.name << "\033[0m";
 
     return os;
@@ -39,9 +81,8 @@ std::ostream& operator << (std::ostream& os, const TestResult& obj)
 struct TestFamily
 {
     std::string name;
-    std::vector <std::function<TestResult ()>> tests {};
+    std::vector <Test> tests {};
     std::vector <std::string> depends_on {};
-    std::vector <TestResult> results {};
 
     bool evaluated = false;
     bool all_passed = true;
@@ -55,6 +96,7 @@ class Testbench
 private:
     std::vector <TestFamily> families {};
     bool dependency_cycle = true;
+    ms_t default_timeout = 5000;  // default 5s per test
 
     /**
      * Find family index by name, or -1
@@ -70,9 +112,11 @@ private:
     /**
      * Run tests for a single family
      */
-    void test_family (TestFamily& family)
+    void run_family (TestFamily& family)
     {
-        family.results.clear ();
+        for (auto& test : family.tests)
+            test.status = TestStatus::NONE;
+
         family.all_passed = true;
         std::vector<TestFamily> failed_deps {};
 
@@ -84,7 +128,7 @@ private:
 
             TestFamily& dep_family = families[idx];
             if (!dep_family.evaluated)
-                test_family (dep_family);
+                run_family (dep_family);
 
             if (!dep_family.all_passed)
                 failed_deps.push_back (dep_family);
@@ -103,15 +147,45 @@ private:
             std::cerr << "\033[0m" << std::endl;
         }
 
-        // Run tests
+        // Run tests sequentially with timeout check
         for (auto& test : family.tests)
         {
-            auto result = test ();
+            test.status = TestStatus::STARTED;
 
-            if (!result.pass)
+            ms_t limit = test.timeout > 0
+                       ? test.timeout
+                       : default_timeout;
+
+            bool result = false;
+            ms_t start = get_time_ms ();
+
+            try
+            {
+                result = test.func ();
+            }
+            catch (std::runtime_error& e)
+            {
+                std::cerr << "Test " << test.name
+                          << " Error: " << e.what () << std::endl;
+            }
+
+            ms_t elapsed = get_time_ms () - start;
+
+            if (elapsed > limit)
+            {
+                test.status = TestStatus::TIMEOUT;
                 family.all_passed = false;
-
-            family.results.push_back (result);
+            }
+            else if (!result)
+            {
+                family.all_passed = false;
+                if (test.status != TestStatus::ERROR)
+                    test.status = TestStatus::FAIL;
+            }
+            else
+            {
+                test.status = TestStatus::PASS;
+            }
         }
 
         family.evaluated = true;
@@ -195,9 +269,17 @@ private:
 
 public:
     /**
+     * Set default timeout in milliseconds for all tests
+     */
+    void set_timeout (int ms)
+    {
+        default_timeout = ms;
+    }
+
+    /**
      * Add a test to the default (unnamed) family
      */
-    void add_test (std::function<TestResult ()> test)
+    void add_test (Test test)
     {
         int idx = find_family ("");
         if (idx < 0)
@@ -212,7 +294,7 @@ public:
      * Add a named test family with optional dependencies
      */
     void add_family (const std::string& name,
-                     std::vector <std::function<TestResult ()>> tests,
+                     std::vector <Test> tests,
                      std::vector <std::string> depends_on = {})
     {
         families.push_back (TestFamily
@@ -235,7 +317,7 @@ public:
             return false;
 
         for (auto& family : families)
-            test_family (family);
+            run_family (family);
         
         return true;
     }
@@ -266,10 +348,10 @@ public:
                           << std::endl;
             }
 
-            for (size_t i = 0; i < family.results.size (); ++i)
+            for (size_t i = 0; i < family.tests.size (); ++i)
             {
-                std::cout << family.results[i];
-                if (i < family.results.size () - 1)
+                std::cout << family.tests[i];
+                if (i < family.tests.size () - 1)
                     std::cout << std::endl;
             }
 

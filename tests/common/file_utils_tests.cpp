@@ -13,59 +13,47 @@ inline const char* out_path = "out/test.txt";
 /**
  * file_to_string: bad path returns empty string
  */
-TestResult fts_bad_path ()
+bool fts_bad_path ()
 {
     std::string result = file_to_string ("bad/path");
 
-    bool pass = result.empty ();
-
-    return TestResult {.name = "fts bad path",
-                       .pass = pass};
+    return result.empty ();
 }
 
 /**
  * file_to_string: reads a known file correctly
  */
-TestResult fts_valid_file ()
+bool fts_valid_file ()
 {
-    std::string result = file_to_string ("/examples/txt/statement.txt");
+    std::string result = file_to_string ("examples/txt/statement.txt");
 
-    bool pass = result == "int x = 5;";
-
-    return TestResult {.name = "fts valid file",
-                       .pass = pass};
+    return result == "int x = 5;";
 }
 
 /**
  * file_to_string: reads file with newlines
  */
-TestResult fts_multiline ()
+bool fts_multiline ()
 {
-    std::string result = file_to_string ("/examples/txt/sentence.txt");
+    std::string result = file_to_string ("examples/txt/sentence.txt");
 
-    bool pass = result == "This is a \nnew line.";
-
-    return TestResult {.name = "fts multiline file",
-                       .pass = pass};
+    return result == "This is a \nnew line.";
 }
 
 /**
  * file_to_string: nonexistent nested path returns empty
  */
-TestResult fts_nested_bad_path ()
+bool fts_nested_bad_path ()
 {
     std::string result = file_to_string ("/no/such/dir/txt/file.txt");
 
-    bool pass = result.empty ();
-
-    return TestResult {.name = "fts nested bad path",
-                       .pass = pass};
+    return result.empty ();
 }
 
 /**
  * string_to_file: basic functionality
  */
-TestResult stf_basic ()
+bool stf_basic ()
 {
     std::string str {"This is just a test..."};
 
@@ -73,16 +61,13 @@ TestResult stf_basic ()
     std::cout << file_to_string ("out/test.txt") << std::endl;
     std::cout << str << std::endl;
 
-    bool pass = (file_to_string ("out/test.txt") == str);
-
-    return TestResult {.name = "stf basic functionality",
-                       .pass = pass};
+    return (file_to_string ("out/test.txt") == str);
 }
 
 /**
  * string_to_file: tabs and newlines
  */
-TestResult stf_spaces ()
+bool stf_spaces ()
 {
     std::string str {"This \nis\t\t just a test..."};
 
@@ -90,10 +75,7 @@ TestResult stf_spaces ()
     std::cout << file_to_string ("out/test.txt") << std::endl;
     std::cout << str << std::endl;
 
-    bool pass = (file_to_string ("out/test.txt") == str);
-
-    return TestResult {.name = "stf spaces",
-                       .pass = pass};
+    return (file_to_string ("out/test.txt") == str);
 }
 
 /**
@@ -105,16 +87,16 @@ int main ()
 
     tb.add_family ("file_to_string",
     {
-        fts_bad_path,
-        fts_valid_file,
-        fts_multiline,
-        fts_nested_bad_path
+        {fts_bad_path,          "fts bad path"},
+        {fts_valid_file,        "fts valid file"},
+        {fts_multiline,         "fts multiline file"},
+        {fts_nested_bad_path,   "fts nested bad path"},
     });
 
     tb.add_family ("string_to_file",
     {
-        stf_basic,
-        stf_spaces
+        {stf_basic,             "stf basic functionality"},
+        {stf_spaces,            "stf spaces"},
     }, {"file_to_string"});
 
     // TODO: Add global file path tests
