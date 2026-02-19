@@ -19,6 +19,3 @@ main:
     mov rsp, rbp
     pop rbp
     ret
-    mov rsp, rbp
-    pop rbp
-    ret

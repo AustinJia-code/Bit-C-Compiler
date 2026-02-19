@@ -7,10 +7,7 @@ main:
     push rbx
     push r12
     push r13
-    mov ebx, 42
-    mov eax, ebx
-    jmp .Lfunc_2
-    mov ebx, 13
+    mov ebx, 14
     mov eax, ebx
     jmp .Lfunc_2
 .Lfunc_2:

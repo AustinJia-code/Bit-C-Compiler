@@ -4,56 +4,70 @@
 double_it:
     push rbp
     mov rbp, rsp
+    push rbx
+    push r12
+    push r13
     sub rsp, 8
-    mov DWORD PTR [rbp +-8], edi
-    mov eax, DWORD PTR [rbp +-8]
-    push rax
-    mov eax, DWORD PTR [rbp +-8]
-    push rax
+    mov DWORD PTR [rbp +-32], edi
+    mov ebx, DWORD PTR [rbp +-32]
+    mov r12d, DWORD PTR [rbp +-32]
+    mov ecx, r12d
+    mov eax, ebx
+    add eax, ecx
+    mov ebx, eax
+    mov eax, ebx
+    jmp .Lfunc_2
+.Lfunc_2:
+    lea rsp, [rbp - 24]
+    pop r13
+    pop r12
     pop rbx
-    pop rax
-    add eax, ebx
-    push rax
-    pop rax
-    mov rsp, rbp
-    pop rbp
-    ret
-    mov rsp, rbp
     pop rbp
     ret
 inc:
     push rbp
     mov rbp, rsp
+    push rbx
+    push r12
+    push r13
     sub rsp, 8
-    mov DWORD PTR [rbp +-8], edi
-    mov eax, DWORD PTR [rbp +-8]
-    push rax
-    push 1
+    mov DWORD PTR [rbp +-32], edi
+    mov ebx, DWORD PTR [rbp +-32]
+    mov r12d, 1
+    mov ecx, r12d
+    mov eax, ebx
+    add eax, ecx
+    mov ebx, eax
+    mov eax, ebx
+    jmp .Lfunc_3
+.Lfunc_3:
+    lea rsp, [rbp - 24]
+    pop r13
+    pop r12
     pop rbx
-    pop rax
-    add eax, ebx
-    push rax
-    pop rax
-    mov rsp, rbp
-    pop rbp
-    ret
-    mov rsp, rbp
     pop rbp
     ret
 main:
     push rbp
     mov rbp, rsp
-    push 20
+    push rbx
+    push r12
+    push r13
+    mov ebx, 20
+    push rbx
     pop rdi
     call inc
-    push rax
+    mov ebx, eax
+    push rbx
     pop rdi
     call double_it
-    push rax
-    pop rax
-    mov rsp, rbp
-    pop rbp
-    ret
-    mov rsp, rbp
+    mov ebx, eax
+    mov eax, ebx
+    jmp .Lfunc_4
+.Lfunc_4:
+    lea rsp, [rbp - 24]
+    pop r13
+    pop r12
+    pop rbx
     pop rbp
     ret

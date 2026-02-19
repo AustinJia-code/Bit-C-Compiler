@@ -4,30 +4,32 @@
 main:
     push rbp
     mov rbp, rsp
-    push 1
-    push 5
-    pop rbx
-    pop rax
-    cmp eax, ebx
+    push rbx
+    push r12
+    push r13
+    mov ebx, 1
+    mov r12d, 5
+    mov ecx, r12d
+    mov eax, ebx
+    cmp eax, ecx
     setl al
     movzx eax, al
-    push rax
-    pop rax
-    test eax, eax
-    je .L2
-    push 42
-    pop rax
-    mov rsp, rbp
-    pop rbp
-    ret
-    jmp .L3
-.L2:
+    mov ebx, eax
+    test ebx, ebx
+    je .L3
+    mov ebx, 42
+    mov eax, ebx
+    jmp .Lfunc_2
+    jmp .L4
 .L3:
-    push 13
-    pop rax
-    mov rsp, rbp
-    pop rbp
-    ret
-    mov rsp, rbp
+.L4:
+    mov ebx, 13
+    mov eax, ebx
+    jmp .Lfunc_2
+.Lfunc_2:
+    lea rsp, [rbp - 24]
+    pop r13
+    pop r12
+    pop rbx
     pop rbp
     ret

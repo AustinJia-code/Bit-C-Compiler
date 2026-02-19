@@ -5,6 +5,7 @@ An itsy Bit-C C compiler that:
 * builds AST
 * Optionally optimizes constant ints, dead branches
 * emits x86-64 
+    * Performs simple register allocation
 
 Supported Ops:
 * integers
@@ -14,6 +15,7 @@ Supported Ops:
 * while
 * return
 * int function definitions with int params
+    * Max 6 params (registers)
 * local variables
     * alphanumeric and underscores
 
@@ -41,7 +43,6 @@ make
     * Else if and else
     * Switch statements (jump tables seem interesting...)
 * Optimizations
-    * Register allocation
     * Loop unrolling
 * Assembler
 * Linker
