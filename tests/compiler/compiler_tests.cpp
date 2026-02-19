@@ -7,18 +7,29 @@
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "codegen.hpp"
+#include "optimizer.hpp"
 #include "file_utils.hpp"
 #include <sys/wait.h>
 
+static bool g_optimize = false;
+
 /**
  * Compile source string through pipeline, assemble, run, return exit code.
- * Returns -1 on failure.
+ * Returns -1 on failure.  Respects the global g_optimize flag.
  */
 int run_source (const std::string& source)
 {
     Lexer lexer {source, false};
     Parser parser {lexer.get_tokens ()};
-    Codegen cg {parser.parse ()};
+    Program prog = parser.parse ();
+
+    if (g_optimize)
+    {
+        Optimizer opt;
+        opt.optimize (prog);
+    }
+
+    Codegen cg {prog};
 
     std::string asm_path = get_full_path ("out/test.s");
     std::string bin_path = get_full_path ("out/test");
@@ -247,9 +258,16 @@ bool com_nested_calls ()
 /**
  * Entry
  */
-int main ()
+int main (int argc, char* argv[])
 {
+    for (int i = 1; i < argc; ++i)
+    {
+        if (std::string {argv[i]} == "-O")
+            g_optimize = true;
+    }
+
     Testbench tb {};
+    std::cout << "Optimizations: " << (g_optimize ? "ON" : "OFF") << std::endl;
 
     tb.add_family ("pipeline",
     {

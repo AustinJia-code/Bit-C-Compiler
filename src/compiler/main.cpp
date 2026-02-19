@@ -12,9 +12,10 @@
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "codegen.hpp"
+#include "optimizer.hpp"
 #include "file_utils.hpp"
 
-static constexpr size_t MAX_PATH_LEN = 64;
+static constexpr size_t MAX_PATH_LEN = 128;
 
 /**
  * Input args
@@ -23,6 +24,7 @@ struct Args
 {
     std::array<char, MAX_PATH_LEN> in_path;
     std::array<char, MAX_PATH_LEN> out_path;
+    bool optimize = false;
 };
 
 /**
@@ -31,10 +33,10 @@ struct Args
  */
 std::optional<Args> parse_args (int argc, char* argv[])
 {
-    // Check arg count
-    if (argc != 4)
+    // Check arg count: required 4, optional -O flag makes 5
+    if (argc < 4 || argc > 5)
     {
-        std::cerr << "Usage: ./compiler <in_path> -o <out_path>" << std::endl;
+        std::cerr << "Usage: ./compiler <in_path> -o <out_path> [-O]" << std::endl;
         return std::nullopt;
     }
 
@@ -42,7 +44,7 @@ std::optional<Args> parse_args (int argc, char* argv[])
     std::string in_path {argv[1]};
     if (in_path.length () > MAX_PATH_LEN - 1)
     {
-        std::cerr << "File path cannot exceed " << MAX_PATH_LEN << "chars"
+        std::cerr << "File path cannot exceed " << MAX_PATH_LEN << " chars"
                   << std::endl;
         return std::nullopt;
     }
@@ -50,7 +52,7 @@ std::optional<Args> parse_args (int argc, char* argv[])
     std::string out_path {argv[3]};
     if (out_path.length () > MAX_PATH_LEN - 1)
     {
-        std::cerr << "File path cannot exceed " << MAX_PATH_LEN << "chars"
+        std::cerr << "File path cannot exceed " << MAX_PATH_LEN << " chars"
                   << std::endl;
         return std::nullopt;
     }
@@ -59,6 +61,17 @@ std::optional<Args> parse_args (int argc, char* argv[])
     Args ret {};
     memcpy (ret.in_path.data (), in_path.c_str (), in_path.size () + 1);
     memcpy (ret.out_path.data (), out_path.c_str (), out_path.size () + 1);
+
+    if (argc == 5)
+    {
+        if (std::string {argv[4]} == "-O")
+            ret.optimize = true;
+        else
+        {
+            std::cerr << "Unknown flag: " << argv[4] << std::endl;
+            return std::nullopt;
+        }
+    }
 
     return ret;
 }
@@ -91,7 +104,15 @@ int main (int argc, char* argv[])
                   << e.loc.col << "]: " << e.what () << std::endl;
         return EXIT_FAILURE;
     }
-    
+
+    // Optimize (optional, enabled with -O)
+    if (args->optimize)
+    {
+        Optimizer optimizer;
+        optimizer.optimize (program);
+        std::cout << "Optimization applied" << std::endl;
+    }
+
     // Generate assembly
     try
     {

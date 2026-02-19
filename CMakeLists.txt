@@ -14,6 +14,7 @@ add_library (compiler_core
     src/compiler/lexer.cpp
     src/compiler/parser.cpp
     src/compiler/codegen.cpp
+    src/compiler/optimizer.cpp
 )
 target_include_directories (compiler_core PUBLIC
     src/common
@@ -36,6 +37,9 @@ target_link_libraries (codegen_tests PRIVATE compiler_core test_core)
 
 add_executable (compiler_tests tests/compiler/compiler_tests.cpp)
 target_link_libraries (compiler_tests PRIVATE compiler_core test_core)
+
+add_executable (optimizer_tests tests/compiler/optimizer_tests.cpp)
+target_link_libraries (optimizer_tests PRIVATE compiler_core test_core)
 
 add_executable (file_utils_tests tests/common/file_utils_tests.cpp)
 target_include_directories (file_utils_tests PRIVATE src/common)

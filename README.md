@@ -3,6 +3,7 @@ An itsy Bit-C C compiler that:
 * lexes
 * parses
 * builds AST
+* Optionally optimizes constant ints, dead branches
 * emits x86-64 
 
 Supported Ops:
@@ -37,9 +38,10 @@ make
     * Structs, unions
     * Comments (mult/single line)
     * Types (char, float)
-* Optimizations (will force me to redo all tests...)
+    * Else if and else
+    * Switch statements (jump tables seem interesting...)
+* Optimizations
     * Register allocation
-    * Constant folding
     * Loop unrolling
 * Assembler
 * Linker
