@@ -20,14 +20,18 @@ Supported Ops:
     * alphanumeric and underscores
 
 ## Build & Run
-1. Replace path in ```src/common/paths.hpp```
+1. Replace path in ```src/common/file_utils.hpp```
 2. Build:
 ```
 cd build
 cmake ..
 make
 ```
-3. Run:
+3. Test:
+```
+sh build_and_test.sh
+```
+4. Run:
 ```
 ./compiler <PATH_TO_FILE> -o <PATH_TO_OUT>
 ```

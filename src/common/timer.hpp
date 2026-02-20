@@ -56,3 +56,74 @@ inline std::chrono::time_point<steady_clock> ms_to_tp (ms_t ms)
     return std::chrono::time_point<std::chrono::steady_clock,
            std::chrono::milliseconds> (std::chrono::milliseconds (ms));
 }
+
+/**
+ * Stopwatch class
+ */
+class Stopwatch
+{
+private:
+    ms_t last_time;
+    ms_t total_time;
+
+    enum StopwatchState
+    {
+        STARTED,
+        PAUSED,
+        NONE
+    };
+
+    StopwatchState state;
+
+public:
+    /**
+     * Starts the stopwatch
+     */
+    void start ()
+    {
+        // Do nothing if already running
+        if (state == StopwatchState::STARTED)
+            return;
+
+        state = StopwatchState::STARTED;
+        last_time = get_time_ms ();
+    }
+
+    /**
+     * Pauses the stopwatch and returns the running time since last start call.
+     */
+    ms_t pause ()
+    {
+        state = StopwatchState::PAUSED;
+        ms_t interval = get_time_ms () - last_time;
+
+        total_time += interval;
+
+        return interval;
+    }
+
+    void reset ()
+    {
+        state = StopwatchState::NONE;
+        total_time = 0;
+    }
+
+    /**
+     * Returns total time between starts and pauses.
+     * If currently running (start called, not paused), adds cur running time.
+     */
+    ms_t read ()
+    {
+        switch (state)
+        {
+            case StopwatchState::NONE:
+                return ms_t {0};
+            case StopwatchState::PAUSED:
+                return total_time;
+            case StopwatchState::STARTED:
+                return total_time + (get_time_ms () - last_time);
+        }
+
+        return ms_t {0};
+    }
+};

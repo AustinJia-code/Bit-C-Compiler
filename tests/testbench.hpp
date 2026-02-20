@@ -64,6 +64,7 @@ std::ostream& operator << (std::ostream& os, const Test& obj)
             break;
         case ERROR:
             status_str = "\033[31mERROR";
+            break;
         default:
             status_str = "NONE";
             break;
@@ -114,6 +115,8 @@ private:
      */
     void run_family (TestFamily& family)
     {
+        if (family.evaluated) return;
+
         for (auto& test : family.tests)
             test.status = TestStatus::NONE;
 
@@ -163,10 +166,17 @@ private:
             {
                 result = test.func ();
             }
-            catch (std::runtime_error& e)
+            catch (const std::exception& e)
             {
                 std::cerr << "Test " << test.name
                           << " Error: " << e.what () << std::endl;
+                test.status = TestStatus::ERROR;
+            }
+            catch (...)
+            {
+                std::cerr << "Test " << test.name
+                          << " threw unknown exception" << std::endl;
+                test.status = TestStatus::ERROR;
             }
 
             ms_t elapsed = get_time_ms () - start;
@@ -308,6 +318,8 @@ public:
     /**
      * Run all families in order, checking dependencies
      * Return true if run success
+     * 
+     * @note Intended to be called once.
      */
     bool run_tests ()
     {
