@@ -11,10 +11,7 @@ double_it:
     mov DWORD PTR [rbp +-32], edi
     mov ebx, DWORD PTR [rbp +-32]
     mov r12d, DWORD PTR [rbp +-32]
-    mov ecx, r12d
-    mov eax, ebx
-    add eax, ecx
-    mov ebx, eax
+    add ebx, r12d
     mov eax, ebx
     jmp .Lfunc_2
 .Lfunc_2:
@@ -34,10 +31,7 @@ inc:
     mov DWORD PTR [rbp +-32], edi
     mov ebx, DWORD PTR [rbp +-32]
     mov r12d, 1
-    mov ecx, r12d
-    mov eax, ebx
-    add eax, ecx
-    mov ebx, eax
+    add ebx, r12d
     mov eax, ebx
     jmp .Lfunc_3
 .Lfunc_3:

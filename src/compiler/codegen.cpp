@@ -12,13 +12,28 @@
  */
 static const char* regs_str_64[] = {"rbx", "r12", "r13"};
 
-// 64-bit register name to its 32-bit version
-static std::string reg32 (const std::string& reg)
+/**
+ * 64-bit register name to its 32-bit version
+ * Empty on failure
+ */
+static std::string reg32 (const std::string& reg64)
 {
-    if (reg == "rbx") return "ebx";
-    if (reg == "r12") return "r12d";
-    if (reg == "r13") return "r13d";
-    return reg;
+    if (reg64 == "rbx") return "ebx";
+    if (reg64 == "r12") return "r12d";
+    if (reg64 == "r13") return "r13d";
+    return "";
+}
+
+/**
+ * 64-bit register name to its 8-bit version
+ * Empty on failure
+ */
+static std::string reg8 (const std::string& reg64)
+{
+    if (reg64 == "rbx") return "bl";
+    if (reg64 == "r12") return "r12b";
+    if (reg64 == "r13") return "r13b";
+    return "";
 }
 
 Codegen::Codegen (const Program& prog)
@@ -162,13 +177,17 @@ void Codegen::gen_stmt (const Stmt& stmt)
                 std::string reg = gen_expr (*node.init.value ());
                 if (!reg.empty ())
                 {
-                    emit ("    mov eax, " + reg32 (reg));
+                    emit ("    mov DWORD PTR [rbp +" +
+                               std::to_string (next_var_offset_) + "], " +
+                               reg32 (reg));
                     free_reg (reg);
                 }
                 else
+                {
                     emit ("    pop rax");
-                emit ("    mov DWORD PTR [rbp +" +
-                            std::to_string (next_var_offset_) + "], eax");
+                    emit ("    mov DWORD PTR [rbp +" +
+                               std::to_string (next_var_offset_) + "], eax");
+                }
             }
         }
 
@@ -176,16 +195,19 @@ void Codegen::gen_stmt (const Stmt& stmt)
         else if constexpr (std::is_same_v<T, Assignment>)
         {
             std::string reg = gen_expr (*node.value);
+            int offset = var_offsets_.at (node.name);
             if (!reg.empty ())
             {
-                emit ("    mov eax, " + reg32 (reg));
+                emit ("    mov DWORD PTR [rbp +" + std::to_string (offset) +
+                           "], " + reg32 (reg));
                 free_reg (reg);
             }
             else
+            {
                 emit ("    pop rax");
-
-            int offset = var_offsets_.at (node.name);
-            emit ("    mov DWORD PTR [rbp +" + std::to_string (offset) + "], eax");
+                emit ("    mov DWORD PTR [rbp +" + std::to_string (offset)
+                           + "], eax");
+            }
         }
 
         // If statement
@@ -308,12 +330,22 @@ std::string Codegen::gen_expr (const Expr& expr)
             std::string operand_reg = gen_expr (*node.operand);
             if (!operand_reg.empty ())
             {
-                emit ("    mov eax, " + reg32 (operand_reg));
-                free_reg (operand_reg);
+                // Operate in place on the scratch register
+                std::string r  = reg32 (operand_reg);
+                std::string r8 = reg8 (operand_reg);
+                if (node.op == UnaryOp::Op::NEGATE)
+                    emit ("    neg " + r);
+                else if (node.op == UnaryOp::Op::NOT)
+                {
+                    emit ("    test " + r + ", " + r);
+                    emit ("    sete " + r8);
+                    emit ("    movzx " + r + ", " + r8);
+                }
+                return operand_reg;
             }
-            else
-                emit ("    pop rax");
 
+            // Spilled path: use stack
+            emit ("    pop rax");
             if (node.op == UnaryOp::Op::NEGATE)
                 emit ("    neg eax");
             else if (node.op == UnaryOp::Op::NOT)
@@ -322,13 +354,8 @@ std::string Codegen::gen_expr (const Expr& expr)
                 emit ("    sete al");
                 emit ("    movzx eax, al");
             }
-
-            std::string dest = alloc_reg ();
-            if (dest.empty ())
-                emit ("    push rax");
-            else
-                emit ("    mov " + reg32 (dest) + ", eax");
-            return dest;
+            emit ("    push rax");
+            return "";
         }
 
         // Function call
@@ -374,76 +401,89 @@ std::string Codegen::gen_expr (const Expr& expr)
             std::string left_reg  = gen_expr (*node.left);
             std::string right_reg = gen_expr (*node.right);
 
-            // Load right operand into ecx, freeing its scratch register
-            if (!right_reg.empty ())
-            {
-                emit ("    mov ecx, " + reg32 (right_reg));
-                free_reg (right_reg);
-            }
-            else
+            // Use scratch registers directly wherever available.
+            // Only fall back to eax/ecx when the value was spilled to the stack.
+            // right is popped before left to respect push order (right was pushed last).
+            if (right_reg.empty ())
                 emit ("    pop rcx");
+            std::string r_val = right_reg.empty () ? "ecx" : reg32 (right_reg);
 
-            // Load left operand into eax, freeing its scratch register
-            if (!left_reg.empty ())
-            {
-                emit ("    mov eax, " + reg32 (left_reg));
-                free_reg (left_reg);
-            }
-            else
+            if (left_reg.empty ())
                 emit ("    pop rax");
+            std::string l_val = left_reg.empty () ? "eax" : reg32 (left_reg);
+
+            std::string l8 = left_reg.empty () ? "al" : reg8 (left_reg);
+            std::string r8 = right_reg.empty () ? "cl" : reg8 (right_reg);
 
             switch (node.op)
             {
                 case BinaryOp::Op::ADD:
-                    emit ("    add eax, ecx");
+                    emit ("    add " + l_val + ", " + r_val);
                     break;
                 case BinaryOp::Op::SUB:
-                    emit ("    sub eax, ecx");
+                    emit ("    sub " + l_val + ", " + r_val);
                     break;
                 case BinaryOp::Op::MUL:
-                    emit ("    imul eax, ecx");
+                    emit ("    imul " + l_val + ", " + r_val);
                     break;
                 case BinaryOp::Op::DIV:
+                    // idiv requires the dividend in eax, bounce left in
+                    if (l_val != "eax") emit ("    mov eax, " + l_val);
                     emit ("    cdq");
-                    emit ("    idiv ecx");
+                    emit ("    idiv " + r_val);
+                    if (l_val != "eax") emit ("    mov " + l_val + ", eax");
                     break;
                 case BinaryOp::Op::EQ:
-                    emit ("    cmp eax, ecx");
-                    emit ("    sete al");
-                    emit ("    movzx eax, al");
+                    emit ("    cmp " + l_val + ", " + r_val);
+                    emit ("    sete " + l8);
+                    emit ("    movzx " + l_val + ", " + l8);
                     break;
                 case BinaryOp::Op::NE:
-                    emit ("    cmp eax, ecx");
-                    emit ("    setne al");
-                    emit ("    movzx eax, al");
+                    emit ("    cmp " + l_val + ", " + r_val);
+                    emit ("    setne " + l8);
+                    emit ("    movzx " + l_val + ", " + l8);
                     break;
                 case BinaryOp::Op::LT:
-                    emit ("    cmp eax, ecx");
-                    emit ("    setl al");
-                    emit ("    movzx eax, al");
+                    emit ("    cmp " + l_val + ", " + r_val);
+                    emit ("    setl " + l8);
+                    emit ("    movzx " + l_val + ", " + l8);
                     break;
                 case BinaryOp::Op::GT:
-                    emit ("    cmp eax, ecx");
-                    emit ("    setg al");
-                    emit ("    movzx eax, al");
+                    emit ("    cmp " + l_val + ", " + r_val);
+                    emit ("    setg " + l8);
+                    emit ("    movzx " + l_val + ", " + l8);
                     break;
                 case BinaryOp::Op::AND:
-                    emit ("    test eax, eax");
-                    emit ("    setne al");
-                    emit ("    test ecx, ecx");
-                    emit ("    setne cl");
-                    emit ("    and al, cl");
-                    emit ("    movzx eax, al");
+                    emit ("    test " + l_val + ", " + l_val);
+                    emit ("    setne " + l8);
+                    emit ("    test " + r_val + ", " + r_val);
+                    emit ("    setne " + r8);
+                    emit ("    and " + l8 + ", " + r8);
+                    emit ("    movzx " + l_val + ", " + l8);
                     break;
                 case BinaryOp::Op::OR:
-                    emit ("    or eax, ecx");
-                    emit ("    test eax, eax");
-                    emit ("    setne al");
-                    emit ("    movzx eax, al");
+                    emit ("    or " + l_val + ", " + r_val);
+                    emit ("    test " + l_val + ", " + l_val);
+                    emit ("    setne " + l8);
+                    emit ("    movzx " + l_val + ", " + l8);
                     break;
             }
 
-            // Store result into a scratch register or spill
+            // Prefer ret in left_reg, then right_reg, then alloc/spill.
+            // After the op, result is in l_val (left_reg's register or eax).
+            if (!left_reg.empty ())
+            {
+                // Result already sits in left_reg.
+                free_reg (right_reg);
+                return left_reg;
+            }
+            if (!right_reg.empty ())
+            {
+                // Left was spilled so result is in eax. Reuse right_reg.
+                emit ("    mov " + r_val + ", eax");
+                return right_reg;
+            }
+            // Both were spilled. Result in eax.
             std::string dest = alloc_reg ();
             if (dest.empty ())
                 emit ("    push rax");
